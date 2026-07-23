@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell_scaffold.dart';
+import 'features/auth/presentation/onboarding_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/products/categories_screen.dart';
@@ -20,10 +21,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const Scaffold(
-          key: Key('onboarding_screen_placeholder'),
-          body: Center(child: Text('Onboarding Screen Placeholder')),
-        ),
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '/login',
