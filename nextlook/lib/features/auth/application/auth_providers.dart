@@ -74,11 +74,17 @@ class AuthController extends StateNotifier<AuthState> {
         email: email,
         password: password,
       );
-      state = AuthAuthenticated(user);
+      if (mounted) {
+        state = AuthAuthenticated(user);
+      }
     } on ApiException catch (e) {
-      state = AuthError(e.message);
+      if (mounted) {
+        state = AuthError(e.message);
+      }
     } catch (e) {
-      state = AuthError(e.toString());
+      if (mounted) {
+        state = AuthError(e.toString());
+      }
     }
   }
 
@@ -89,11 +95,17 @@ class AuthController extends StateNotifier<AuthState> {
         email: email,
         password: password,
       );
-      state = AuthAuthenticated(user);
+      if (mounted) {
+        state = AuthAuthenticated(user);
+      }
     } on ApiException catch (e) {
-      state = AuthError(e.message);
+      if (mounted) {
+        state = AuthError(e.message);
+      }
     } catch (e) {
-      state = AuthError(e.toString());
+      if (mounted) {
+        state = AuthError(e.toString());
+      }
     }
   }
 
@@ -101,9 +113,13 @@ class AuthController extends StateNotifier<AuthState> {
     state = const AuthLoading();
     try {
       await _authRepository.logout();
-      state = const AuthUnauthenticated();
+      if (mounted) {
+        state = const AuthUnauthenticated();
+      }
     } catch (e) {
-      state = AuthError(e.toString());
+      if (mounted) {
+        state = AuthError(e.toString());
+      }
     }
   }
 
@@ -112,14 +128,20 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       final hasSession = await _authRepository.hasValidSession();
       if (!hasSession) {
-        state = const AuthUnauthenticated();
+        if (mounted) {
+          state = const AuthUnauthenticated();
+        }
         return;
       }
       final user = await _authRepository.getCurrentUser();
-      state = AuthAuthenticated(user);
+      if (mounted) {
+        state = AuthAuthenticated(user);
+      }
     } catch (e) {
       await _authRepository.logout();
-      state = const AuthUnauthenticated();
+      if (mounted) {
+        state = const AuthUnauthenticated();
+      }
     }
   }
 }

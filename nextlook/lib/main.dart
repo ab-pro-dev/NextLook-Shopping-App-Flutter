@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell_scaffold.dart';
+import 'features/auth/application/auth_providers.dart';
+import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/onboarding_screen.dart';
+import 'features/auth/presentation/register_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/products/categories_screen.dart';
@@ -11,9 +14,50 @@ import 'features/wishlist/wishlist_screen.dart';
 import 'features/cart/cart_screen.dart';
 import 'features/profile/profile_screen.dart';
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
+
+final routerNotifierProvider = Provider<RouterNotifier>((ref) => RouterNotifier(ref));
+
 final goRouterProvider = Provider<GoRouter>((ref) {
+  final routerNotifier = ref.watch(routerNotifierProvider);
+
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: routerNotifier,
+    redirect: (context, state) {
+      final authState = ref.read(authControllerProvider);
+      final isAuth = authState is AuthAuthenticated;
+      final isUnauth = authState is AuthUnauthenticated;
+
+      final isAuthRoute = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register';
+
+      final isProtectedRoute = state.matchedLocation == '/home' ||
+          state.matchedLocation == '/categories' ||
+          state.matchedLocation == '/wishlist' ||
+          state.matchedLocation == '/cart' ||
+          state.matchedLocation == '/profile';
+
+      // Redirect authenticated users away from login/register back to home
+      if (isAuth && isAuthRoute) {
+        return '/home';
+      }
+
+      // Redirect unauthenticated users trying to access protected shell routes to login
+      if (isUnauth && isProtectedRoute) {
+        return '/login';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/splash',
@@ -25,10 +69,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) => const Scaffold(
-          key: Key('login_screen_placeholder'),
-          body: Center(child: Text('Login Screen Placeholder')),
-        ),
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
       ),
       ShellRoute(
         navigatorKey: shellNavigatorKey,
