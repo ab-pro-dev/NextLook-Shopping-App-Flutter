@@ -12,6 +12,7 @@ nextlook/app.*.map.json
 nextlook/android/app/debug
 nextlook/android/app/profile
 nextlook/android/app/release
+*.ttf
 
 # --- Node.js / Express ---
 node_modules/

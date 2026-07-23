@@ -9,6 +9,7 @@ void main() {
         child: NextLookApp(),
       ),
     );
+    await tester.pump(const Duration(seconds: 2));
 
     expect(find.byType(NextLookApp), findsOneWidget);
   });
