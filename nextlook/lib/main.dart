@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell_scaffold.dart';
 import 'features/auth/application/auth_providers.dart';
@@ -75,6 +76,65 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
+
+      // Placeholder routes for Search, Category Products, and Product Detail
+      GoRoute(
+        path: '/search',
+        builder: (context, state) {
+          final isFlashSale = state.uri.queryParameters['isFlashSale'] == 'true';
+          final isNewArrival = state.uri.queryParameters['isNewArrival'] == 'true';
+          final isTrending = state.uri.queryParameters['isTrending'] == 'true';
+          final isBestSeller = state.uri.queryParameters['isBestSeller'] == 'true';
+          String title = 'Search Products';
+          if (isFlashSale) title = 'Flash Sale Products';
+          if (isNewArrival) title = 'New Arrivals';
+          if (isTrending) title = 'Trending Products';
+          if (isBestSeller) title = 'Best Sellers';
+
+          return Scaffold(
+            appBar: AppBar(title: Text(title, style: GoogleFonts.poppins())),
+            body: Center(
+              child: Text(
+                'Search & Filter Screen Placeholder\nQuery: ${state.uri.queryParameters}',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/categories/:slug',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return Scaffold(
+            appBar: AppBar(title: Text('Category: $slug', style: GoogleFonts.poppins())),
+            body: Center(
+              child: Text(
+                'Category Products Screen Placeholder ($slug)',
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/product/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return Scaffold(
+            appBar: AppBar(title: Text('Product Detail', style: GoogleFonts.poppins())),
+            body: Center(
+              child: Text(
+                'Product Detail Screen Placeholder\nProduct ID: $id',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+            ),
+          );
+        },
+      ),
+
       ShellRoute(
         navigatorKey: shellNavigatorKey,
         builder: (context, state, child) {
