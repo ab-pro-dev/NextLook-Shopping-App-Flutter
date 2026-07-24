@@ -6,7 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'core/widgets/shell_scaffold.dart';
 import 'features/auth/application/auth_providers.dart';
 import 'features/auth/presentation/login_screen.dart';
-import 'features/auth/presentation/onboarding_screen.dart';
+import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'features/auth/presentation/register_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/home/home_screen.dart';
