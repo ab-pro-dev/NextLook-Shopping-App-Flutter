@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -9,115 +10,214 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  bool _isPressed = false;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  bool _isButtonPressed = false;
 
-  void _onGetStartedTap() {
+  final List<String> _onboardingImages = const [
+    'assets/images/screen_1.png',
+    'assets/images/screen_2.png',
+    'assets/images/screen_3.png',
+  ];
+
+  void _onSkipTap() {
     context.go('/home');
+  }
+
+  void _onNextTap() {
+    if (_currentPage < _onboardingImages.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOutCubic,
+      );
+    } else {
+      context.go('/home');
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
+    final topPadding = mediaQuery.padding.top;
     final bottomPadding = mediaQuery.padding.bottom;
 
+    final isLastPage = _currentPage == _onboardingImages.length - 1;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF070B16), // Deep navy/black
+      backgroundColor: Colors.white,
       body: Stack(
-        fit: StackFit.expand,
         children: [
-          // 1. Full-bleed NextLook Splash Artwork (Hanger Logo + NextLook title + Model)
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/nextlook_splash_bg.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: const Color(0xFF070B16),
-                  child: const Center(
-                    child: Icon(
-                      Icons.shopping_bag_outlined,
-                      size: 80,
-                      color: Colors.white24,
+          // 1. PageView for the 3 Onboarding Screens
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemCount: _onboardingImages.length,
+            itemBuilder: (context, index) {
+              return Container(
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    SizedBox(height: topPadding + 48), // Leave space for top-right Skip button
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Image.asset(
+                          _onboardingImages[index],
+                          fit: BoxFit.contain,
+                          alignment: Alignment.center,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.image_not_supported_outlined,
+                                    size: 64,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Screen ${index + 1}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF333333),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                    const SizedBox(height: 120), // Reserve bottom space for dots & button
+                  ],
+                ),
+              );
+            },
           ),
 
-          // 2. Gradient overlay at the bottom for high button contrast
+          // 2. Top-Right "Skip" Button
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 180,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Color(0xCC070B16),
-                    Color(0xFF070B16),
-                  ],
+            top: topPadding + 8,
+            right: 16,
+            child: SafeArea(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _onSkipTap,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    child: Text(
+                      'Skip',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF333333),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
 
-          // 3. Rounded Pill "Get Started" Button at bottom
-          SafeArea(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 32,
-                  right: 32,
-                  bottom: bottomPadding > 0 ? 16 : 32,
-                ),
-                child: GestureDetector(
-                  onTapDown: (_) => setState(() => _isPressed = true),
-                  onTapUp: (_) {
-                    setState(() => _isPressed = false);
-                    _onGetStartedTap();
-                  },
-                  onTapCancel: () => setState(() => _isPressed = false),
-                  child: AnimatedScale(
-                    scale: _isPressed ? 0.95 : 1.0,
-                    duration: const Duration(milliseconds: 100),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      decoration: BoxDecoration(
-                        color: _isPressed
-                            ? const Color(0xFFD63E45) // Slightly darker coral on press
-                            : const Color(0xFFF2545B), // Coral/pink (#F2545B)
-                        borderRadius: BorderRadius.circular(50),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFF2545B).withValues(alpha: 0.45),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
+          // 3. Bottom Controls (Pagination Dots + Dark Pill Action Button)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: Colors.white,
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                bottom: bottomPadding > 0 ? bottomPadding + 12 : 28,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Pagination Dots (3 dots total)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _onboardingImages.length,
+                      (index) {
+                        final isActive = _currentPage == index;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          height: 8,
+                          width: isActive ? 24 : 8,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? const Color(0xFFF2545B) // Active brand Coral/Pink (#F2545B)
+                                : const Color(0xFFE0E0E0), // Inactive light grey
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                        ],
-                      ),
-                      child: const Text(
-                        'Get Started',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.4,
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Action Button ("Next" for Screens 1 & 2, "Finish" for Screen 3)
+                  GestureDetector(
+                    onTapDown: (_) => setState(() => _isButtonPressed = true),
+                    onTapUp: (_) {
+                      setState(() => _isButtonPressed = false);
+                      _onNextTap();
+                    },
+                    onTapCancel: () => setState(() => _isButtonPressed = false),
+                    child: AnimatedScale(
+                      scale: _isButtonPressed ? 0.96 : 1.0,
+                      duration: const Duration(milliseconds: 100),
+                      curve: Curves.easeOutCubic,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: _isButtonPressed
+                              ? const Color(0xFF141420) // Slightly darker navy on press
+                              : const Color(0xFF1E1E2E), // Dark Navy/Black (#1E1E2E)
+                          borderRadius: BorderRadius.circular(50),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1E1E2E).withValues(alpha: 0.25),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
+                        child: Text(
+                          isLastPage ? 'Finish' : 'Next',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
