@@ -158,7 +158,7 @@ async function main() {
     {
       name: 'Elegance Trench Coat',
       description: 'Double-breasted classic beige trench coat crafted from water-resistant cotton gabardine.',
-      brand: 'StyleHub Studio',
+      brand: 'NextLook Studio',
       categoryId: womenCategory.id,
       price: 249.99,
       discountPrice: 179.99,

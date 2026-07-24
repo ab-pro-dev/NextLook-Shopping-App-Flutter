@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../application/auth_providers.dart';
 
-/// Login Screen matching StyleHub design system with form validation,
+/// Login Screen for NextLook design system with form validation,
 /// AuthController integration, social auth stubs, and register link.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../features/products/data/product_card_model.dart';
 
-/// Reusable Product Card Widget matching StyleHub design specs.
+/// Reusable Product Card Widget matching NextLook design specs.
 class ProductCardWidget extends StatelessWidget {
   final ProductCard product;
   final double width;

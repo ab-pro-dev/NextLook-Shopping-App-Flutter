@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../application/auth_providers.dart';
 
-/// Register Screen matching StyleHub design system with field validations,
+/// Register Screen for NextLook design system with field validations,
 /// password match check, AuthController integration, and login link.
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});

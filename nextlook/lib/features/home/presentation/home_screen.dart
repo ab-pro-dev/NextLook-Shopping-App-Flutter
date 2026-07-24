@@ -8,7 +8,7 @@ import '../../products/application/product_providers.dart';
 import '../../products/data/category_model.dart';
 import '../../products/data/product_card_model.dart';
 
-/// Real Home Screen matching StyleHub design reference with search bar,
+/// Real Home Screen for NextLook with search bar,
 /// banner carousel, categories row, and 4 product section lists.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -94,7 +94,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'StyleHub',
+                          'NextLook',
                           style: GoogleFonts.poppins(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,

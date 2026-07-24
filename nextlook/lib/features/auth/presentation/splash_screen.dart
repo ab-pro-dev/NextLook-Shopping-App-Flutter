@@ -77,7 +77,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'StyleHub',
+              'NextLook',
               style: GoogleFonts.poppins(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
@@ -87,7 +87,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Dress Your Best',
+              'Discover Your Next Look',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w300,
