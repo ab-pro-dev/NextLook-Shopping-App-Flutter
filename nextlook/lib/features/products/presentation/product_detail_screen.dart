@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../wishlist/application/wishlist_providers.dart';
 import '../application/product_providers.dart';
+import '../data/product_card_model.dart';
 import '../data/product_detail_model.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -181,22 +183,51 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   const SizedBox(width: 10),
 
                                   // Wishlist Heart Button
-                                  // NOTE: Wishlist persistence is a future phase. Toggles local UI state for now.
-                                  CircleAvatar(
-                                    backgroundColor: Colors.white.withValues(alpha: 0.85),
-                                    child: IconButton(
-                                      key: const Key('wishlist_heart_button'),
-                                      icon: Icon(
-                                        _isWishlisted ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                                        color: _isWishlisted ? discountPink : darkNavy,
-                                        size: 22,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _isWishlisted = !_isWishlisted;
-                                        });
-                                      },
-                                    ),
+                                  Builder(
+                                    builder: (context) {
+                                      final wishlistState = ref.watch(wishlistNotifierProvider).valueOrNull;
+                                      final isWishlisted = wishlistState?.isWishlisted(product.id) ?? _isWishlisted;
+
+                                      return CircleAvatar(
+                                        backgroundColor: Colors.white.withValues(alpha: 0.85),
+                                        child: IconButton(
+                                          key: const Key('wishlist_heart_button'),
+                                          icon: Icon(
+                                            isWishlisted ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                                            color: isWishlisted ? discountPink : darkNavy,
+                                            size: 22,
+                                          ),
+                                          onPressed: () async {
+                                            setState(() {
+                                              _isWishlisted = !_isWishlisted;
+                                            });
+                                            final card = ProductCard(
+                                              id: product.id,
+                                              name: product.name,
+                                              brand: product.brand,
+                                              price: product.price,
+                                              discountPrice: product.discountPrice,
+                                              rating: product.rating,
+                                              reviewCount: product.reviewCount,
+                                              thumbnailUrl: product.images.isNotEmpty ? product.images.first.url : null,
+                                              isFlashSale: product.isFlashSale,
+                                            );
+                                            try {
+                                              await ref.read(wishlistNotifierProvider.notifier).toggleWishlist(card);
+                                            } catch (_) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Failed to update wishlist', style: GoogleFonts.poppins()),
+                                                    backgroundColor: Colors.redAccent,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),

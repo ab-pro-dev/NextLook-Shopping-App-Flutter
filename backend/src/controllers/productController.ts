@@ -17,7 +17,7 @@ const productQuerySchema = z.object({
   limit: z.coerce.number().int().min(1, 'limit must be a positive integer').max(100).optional().default(20),
 });
 
-function formatProductCard(p: any) {
+export function formatProductCard(p: any) {
   return {
     id: p.id,
     name: p.name,

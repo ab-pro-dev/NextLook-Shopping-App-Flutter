@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import productRoutes from './routes/productRoutes';
+import wishlistRoutes from './routes/wishlistRoutes';
 
 dotenv.config();
 
@@ -22,6 +23,9 @@ app.use('/categories', categoryRoutes);
 
 app.use('/api/products', productRoutes);
 app.use('/products', productRoutes);
+
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/wishlist', wishlistRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });

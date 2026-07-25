@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/products/data/product_card_model.dart';
+import '../../features/wishlist/application/wishlist_providers.dart';
 
 /// Reusable Product Card Widget matching NextLook design specs.
 class ProductCardWidget extends StatelessWidget {
@@ -139,6 +141,48 @@ class ProductCardWidget extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                  // Top-Right Wishlist Heart Overlay
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final wishlistState = ref.watch(wishlistNotifierProvider).valueOrNull;
+                        final isWishlisted = wishlistState?.isWishlisted(product.id) ?? false;
+
+                        return GestureDetector(
+                          key: Key('product_card_heart_${product.id}'),
+                          onTap: () async {
+                            try {
+                              await ref.read(wishlistNotifierProvider.notifier).toggleWishlist(product);
+                            } catch (_) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Failed to update wishlist', style: GoogleFonts.poppins()),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isWishlisted ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                              color: isWishlisted ? discountPink : const Color(0xFF1E1E2D),
+                              size: 16,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
 
