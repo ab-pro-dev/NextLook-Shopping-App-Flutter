@@ -412,7 +412,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // NOTE: Circular avatar category icon placeholders. Flagged for real photo assets.
           return GestureDetector(
             key: Key('category_item_${cat.slug}'),
-            onTap: () => context.push('/categories/${cat.slug}'),
+            onTap: () => context.push('/categories/${cat.slug}/products'),
             child: Container(
               margin: const EdgeInsets.only(right: 18),
               child: Column(

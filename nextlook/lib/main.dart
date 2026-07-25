@@ -119,6 +119,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/categories/:slug/products',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return Scaffold(
+            appBar: AppBar(title: Text('Category: $slug', style: GoogleFonts.poppins())),
+            body: Center(
+              child: Text(
+                'Category Products Screen Placeholder ($slug)',
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+            ),
+          );
+        },
+      ),
+      GoRoute(
         path: '/product/:id',
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
