@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../cart/application/cart_providers.dart';
 import '../../wishlist/application/wishlist_providers.dart';
 import '../application/product_providers.dart';
 import '../data/product_card_model.dart';
@@ -49,7 +51,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
   bool get _canAddToCart => _selectedColor != null && _selectedSize != null && !_selectedSize!.isOutOfStock;
 
-  void _onAddToCartTap() {
+  Future<void> _onAddToCartTap() async {
     if (!_canAddToCart) {
       String hint = 'Please select a size';
       if (_selectedColor == null && _selectedSize == null) {
@@ -71,18 +73,46 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       return;
     }
 
-    // NOTE: Real cart & checkout logic will be connected in a future phase.
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Coming soon! Cart & Checkout logic will be enabled in the next phase.',
-          style: GoogleFonts.poppins(),
-        ),
-        backgroundColor: const Color(0xFF6C63FF),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    try {
+      await ref.read(cartProvider.notifier).addToCart(
+        productId: widget.productId,
+        colorName: _selectedColor!.name,
+        sizeLabel: _selectedSize!.label,
+        quantity: 1,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added to cart', style: GoogleFonts.poppins()),
+            backgroundColor: const Color(0xFF6C63FF),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message, style: GoogleFonts.poppins()),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add to cart', style: GoogleFonts.poppins()),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   @override

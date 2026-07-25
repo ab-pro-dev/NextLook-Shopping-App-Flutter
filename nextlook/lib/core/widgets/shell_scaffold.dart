@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/cart/application/cart_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -53,7 +55,7 @@ final List<ShellTab> tabs = [
   ),
 ];
 
-class ShellScaffold extends StatelessWidget {
+class ShellScaffold extends ConsumerWidget {
   final Widget child;
 
   const ShellScaffold({super.key, required this.child});
@@ -65,9 +67,10 @@ class ShellScaffold extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).uri.toString();
     final currentIndex = _currentIndex(location);
+    final cartItemCount = ref.watch(cartItemCountProvider);
 
     return Scaffold(
       body: child,
@@ -76,8 +79,8 @@ class ShellScaffold extends StatelessWidget {
         onTap: (index) => context.go(tabs[index].path),
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.white,
-        selectedItemColor: AppColors.primary, // Solid primary purple (#6C63FF)
-        unselectedItemColor: const Color(0xFF8A8D9F), // Muted gray outline style
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: const Color(0xFF8A8D9F),
         elevation: 8,
         selectedLabelStyle: AppTextStyles.caption.copyWith(
           fontWeight: FontWeight.w600,
@@ -87,9 +90,27 @@ class ShellScaffold extends StatelessWidget {
           color: const Color(0xFF8A8D9F),
         ),
         items: tabs.map((tab) {
+          final isCartTab = tab.path == '/cart';
+
+          Widget iconWidget = Icon(tab.icon, size: 24);
+          Widget activeIconWidget = Icon(tab.activeIcon, size: 24);
+
+          if (isCartTab && cartItemCount > 0) {
+            iconWidget = Badge(
+              label: Text('$cartItemCount'),
+              backgroundColor: AppColors.primary,
+              child: iconWidget,
+            );
+            activeIconWidget = Badge(
+              label: Text('$cartItemCount'),
+              backgroundColor: AppColors.primary,
+              child: activeIconWidget,
+            );
+          }
+
           return BottomNavigationBarItem(
-            icon: Icon(tab.icon, size: 24),
-            activeIcon: Icon(tab.activeIcon, size: 24),
+            icon: iconWidget,
+            activeIcon: activeIconWidget,
             label: tab.label,
           );
         }).toList(),

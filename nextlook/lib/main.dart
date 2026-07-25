@@ -126,6 +126,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return ProductDetailScreen(productId: id);
         },
       ),
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(title: Text('Checkout', style: GoogleFonts.poppins())),
+          body: Center(
+            child: Text(
+              'Checkout Screen Placeholder\nFlow will be connected in Step 5',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(fontSize: 16),
+            ),
+          ),
+        ),
+      ),
 
       ShellRoute(
         navigatorKey: shellNavigatorKey,
