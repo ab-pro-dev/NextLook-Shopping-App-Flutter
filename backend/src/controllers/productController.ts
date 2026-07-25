@@ -11,6 +11,7 @@ const productQuerySchema = z.object({
   maxPrice: z.coerce.number().min(0, 'maxPrice must be greater than or equal to 0').optional(),
   color: z.string().optional(),
   size: z.string().optional(),
+  minRating: z.coerce.number().min(0).max(5).optional(),
   sort: z.enum(['newest', 'price_asc', 'price_desc', 'rating', 'popularity']).optional().default('newest'),
   page: z.coerce.number().int().min(1, 'page must be a positive integer').optional().default(1),
   limit: z.coerce.number().int().min(1, 'limit must be a positive integer').max(100).optional().default(20),
@@ -41,7 +42,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    const { category, search, minPrice, maxPrice, color, size, sort, page, limit } = parseResult.data;
+    const { category, search, minPrice, maxPrice, color, size, minRating, sort, page, limit } = parseResult.data;
 
     const where: Prisma.ProductWhereInput = {};
 
@@ -66,6 +67,12 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       if (maxPrice !== undefined) {
         where.price.lte = maxPrice;
       }
+    }
+
+    if (minRating !== undefined) {
+      where.rating = {
+        gte: minRating,
+      };
     }
 
     if (color) {

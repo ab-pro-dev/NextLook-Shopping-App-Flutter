@@ -22,6 +22,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
   late String? _selectedCategory;
   late String? _selectedColor;
   late String? _selectedSize;
+  late double? _selectedRating;
 
   final List<Map<String, dynamic>> _availableColors = [
     {'name': 'Black', 'color': const Color(0xFF1E1E2D)},
@@ -45,6 +46,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
     _selectedCategory = widget.currentParams.category;
     _selectedColor = widget.currentParams.color;
     _selectedSize = widget.currentParams.size;
+    _selectedRating = widget.currentParams.minRating;
   }
 
   void _onReset() {
@@ -52,6 +54,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
       _priceRange = const RangeValues(0.0, 200.0);
       _selectedColor = null;
       _selectedSize = null;
+      _selectedRating = null;
     });
   }
 
@@ -62,10 +65,12 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
       maxPrice: _priceRange.end < 200 ? _priceRange.end : null,
       color: _selectedColor,
       size: _selectedSize,
+      minRating: _selectedRating,
       clearMinPrice: _priceRange.start == 0,
       clearMaxPrice: _priceRange.end == 200,
       clearColor: _selectedColor == null,
       clearSize: _selectedSize == null,
+      clearMinRating: _selectedRating == null,
       page: 1,
     );
 
@@ -316,9 +321,59 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                 );
               }).toList(),
             ),
+            const SizedBox(height: 20),
+
+            // 5. Rating Filter Selector
+            Text(
+              'Rating',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: darkNavy,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<double?>(
+                  value: _selectedRating,
+                  isExpanded: true,
+                  hint: Text('All Ratings', style: GoogleFonts.poppins(fontSize: 14)),
+                  items: [
+                    DropdownMenuItem<double?>(
+                      value: null,
+                      child: Text('All Ratings', style: GoogleFonts.poppins(fontSize: 14)),
+                    ),
+                    DropdownMenuItem<double?>(
+                      value: 4.5,
+                      child: Text('4.5 Stars & above', style: GoogleFonts.poppins(fontSize: 14)),
+                    ),
+                    DropdownMenuItem<double?>(
+                      value: 4.0,
+                      child: Text('4 Stars & above', style: GoogleFonts.poppins(fontSize: 14)),
+                    ),
+                    DropdownMenuItem<double?>(
+                      value: 3.0,
+                      child: Text('3 Stars & above', style: GoogleFonts.poppins(fontSize: 14)),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedRating = val;
+                    });
+                  },
+                ),
+              ),
+            ),
             const SizedBox(height: 28),
 
-            // 5. Apply Filters Button
+            // 6. Apply Filters Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
