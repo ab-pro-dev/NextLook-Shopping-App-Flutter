@@ -8,8 +8,9 @@ import '../../products/application/product_providers.dart';
 import '../../products/data/category_model.dart';
 import '../../products/data/product_card_model.dart';
 
-/// Real Home Screen for NextLook with search bar,
-/// banner carousel, categories row, and 4 product section lists.
+/// Real Home Screen for NextLook matching the exact UI spec from The_App_UI.png
+/// (Top search bar first, lifestyle photo banner, categories in exact order:
+/// Men, Women, Kids, Shoes, Accessories, Flash Sale with timer & product cards).
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -51,15 +52,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   IconData _getCategoryIcon(String iconName) {
     switch (iconName.toLowerCase()) {
       case 'male':
-        return Icons.male_rounded;
+      case 'men':
+        return Icons.person_rounded;
       case 'female':
-        return Icons.female_rounded;
+      case 'women':
+        return Icons.face_3_rounded;
       case 'child':
       case 'kids':
         return Icons.child_care_rounded;
       case 'shoe':
       case 'shoes':
-        return Icons.hiking_rounded;
+        return Icons.roller_skating_rounded;
       case 'accessories':
         return Icons.watch_rounded;
       default:
@@ -67,11 +70,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  /// Sort categories in the exact reference order: Men, Women, Kids, Shoes, Accessories
+  List<Category> _sortCategories(List<Category> categories) {
+    const fixedOrder = ['men', 'women', 'kids', 'shoes', 'accessories'];
+    final sorted = List<Category>.from(categories);
+    sorted.sort((a, b) {
+      final indexA = fixedOrder.indexOf(a.slug.toLowerCase());
+      final indexB = fixedOrder.indexOf(b.slug.toLowerCase());
+      if (indexA != -1 && indexB != -1) return indexA.compareTo(indexB);
+      if (indexA != -1) return -1;
+      if (indexB != -1) return 1;
+      return a.name.compareTo(b.name);
+    });
+    return sorted;
+  }
+
   @override
   Widget build(BuildContext context) {
     const primaryPurple = Color(0xFF6C63FF);
     const darkNavy = Color(0xFF1E1E2D);
-    const backgroundColor = Color(0xFFF5F6FA);
+    const backgroundColor = Color(0xFFF8F9FC);
 
     final categoriesAsync = ref.watch(categoriesProvider);
     final homeSectionsAsync = ref.watch(homeSectionsProvider);
@@ -84,54 +102,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header & Search Bar Section
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'NextLook',
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: darkNavy,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        Text(
-                          'Dress Your Best',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.notifications_none_rounded, color: darkNavy, size: 26),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Notifications coming soon')),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 12),
 
-              // Search Bar Stub
+              // 1. TOP OF SCREEN: Search Bar directly at the top (NO app header/bell icon above it)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
                 child: GestureDetector(
                   key: const Key('home_search_bar'),
                   onTap: () => context.push('/search'),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -148,13 +128,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         const Icon(Icons.search_rounded, color: Colors.grey, size: 22),
                         const SizedBox(width: 12),
-                        Text(
-                          'Search products, brands...',
-                          style: GoogleFonts.poppins(
-                            color: Colors.grey[400],
-                            fontSize: 14,
+                        Expanded(
+                          child: Text(
+                            'Search products, brands...',
+                            style: GoogleFonts.poppins(
+                              color: Colors.grey[400],
+                              fontSize: 14,
+                            ),
                           ),
                         ),
+                        const Icon(Icons.tune_rounded, color: Colors.grey, size: 20),
                       ],
                     ),
                   ),
@@ -162,9 +145,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Banner Slider Carousel
+              // 2. BANNER: Dark photo-style background with lifestyle model, New Collection 2026, Explore Now pill button
               SizedBox(
-                height: 150,
+                height: 160,
                 child: PageView(
                   key: const Key('home_banner_slider'),
                   controller: _bannerController,
@@ -174,58 +157,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     });
                   },
                   children: [
-                    _buildBannerCard(
-                      bgColor: darkNavy,
+                    _buildLifestyleBannerCard(
                       tag: 'NEW COLLECTION 2026',
-                      title: '25% OFF On Selected Items',
+                      title: 'New Collection\n2026',
                       buttonText: 'Explore Now',
-                      accentColor: primaryPurple,
+                      imageAsset: 'assets/images/onboarding_model_bg.jpg',
                     ),
-                    _buildBannerCard(
-                      bgColor: primaryPurple,
+                    _buildLifestyleBannerCard(
                       tag: 'FLASH SALE WEEKEND',
-                      title: 'Up to 50% Discount Deals',
+                      title: 'Up to 50% Off\nSelected Items',
                       buttonText: 'Shop Sale',
-                      accentColor: const Color(0xFFFF6584),
+                      imageAsset: 'assets/images/onboarding_model_bg.jpg',
                     ),
-                    _buildBannerCard(
-                      bgColor: const Color(0xFF2C3E50),
+                    _buildLifestyleBannerCard(
                       tag: 'TRENDING FASHION',
-                      title: 'Discover Essential Styles',
-                      buttonText: 'View Trends',
-                      accentColor: Colors.amber,
+                      title: 'Discover Modern\nEssential Styles',
+                      buttonText: 'Explore',
+                      imageAsset: 'assets/images/onboarding_model_bg.jpg',
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
-              // Banner Dot Indicators
+              // Banner Dot Indicators (Matching reference spacing & style)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(3, (index) {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _activeBannerIndex == index ? 20 : 8,
-                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: _activeBannerIndex == index ? 18 : 6,
+                    height: 6,
                     decoration: BoxDecoration(
-                      color: _activeBannerIndex == index ? primaryPurple : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
+                      color: _activeBannerIndex == index ? darkNavy : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   );
                 }),
               ),
               const SizedBox(height: 24),
 
-              // Categories Section
+              // 3. CATEGORIES ROW: Fixed order (Men, Women, Kids, Shoes, Accessories) with circular avatar styling
               _buildSectionHeader(
                 title: 'Categories',
                 onViewAll: null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               categoriesAsync.when(
-                data: (categories) => _buildCategoriesRow(categories),
+                data: (categories) => _buildCategoriesRow(_sortCategories(categories)),
                 loading: () => const SizedBox(
                   height: 90,
                   child: Center(
@@ -239,7 +219,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Flash Sale Section
+              // 4. FLASH SALE + PRODUCT CARDS SECTION
               homeSectionsAsync.when(
                 data: (sections) => Column(
                   children: [
@@ -248,7 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       badgeWidget: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF6584).withValues(alpha: 0.15),
+                          color: const Color(0xFFFF6584).withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -256,7 +236,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             const Icon(Icons.timer_outlined, size: 14, color: Color(0xFFFF6584)),
                             const SizedBox(width: 4),
                             Text(
-                              '02:45:30',
+                              '02 : 45 : 30',
                               style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -268,7 +248,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       onViewAll: () => context.push('/search?isFlashSale=true'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     _buildHorizontalProductList('flash_sale_list', sections.flashSale),
                     const SizedBox(height: 24),
 
@@ -277,7 +257,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       title: 'New Arrivals',
                       onViewAll: () => context.push('/search?isNewArrival=true'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     _buildHorizontalProductList('new_arrivals_list', sections.newArrivals),
                     const SizedBox(height: 24),
 
@@ -286,7 +266,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       title: 'Trending Now',
                       onViewAll: () => context.push('/search?isTrending=true'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     _buildHorizontalProductList('trending_list', sections.trending),
                     const SizedBox(height: 24),
 
@@ -295,7 +275,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       title: 'Best Sellers',
                       onViewAll: () => context.push('/search?isBestSeller=true'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     _buildHorizontalProductList('best_sellers_list', sections.bestSellers),
                   ],
                 ),
@@ -326,91 +306,108 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildBannerCard({
-    required Color bgColor,
+  /// Banner Card with dark lifestyle photo background & pill button matching the reference mockup
+  Widget _buildLifestyleBannerCard({
     required String tag,
     required String title,
     required String buttonText,
-    required Color accentColor,
+    required String imageAsset,
   }) {
+    // NOTE: Promotional lifestyle photo background. Flagged for custom campaign banner assets.
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20.0),
-      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: const Color(0xFF161A23),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: bgColor.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            // Background lifestyle photo image with dark gradient overlay
+            Positioned.fill(
+              child: ShaderMask(
+                shaderCallback: (rect) {
+                  return const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Color(0xFF0F1219), // Dark gradient on left for high text readability
+                      Color(0xEE161A23),
+                      Colors.transparent,
+                    ],
+                    stops: [0.0, 0.55, 1.0],
+                  ).createShader(rect);
+                },
+                blendMode: BlendMode.srcOver,
+                child: Image.asset(
+                  imageAsset,
+                  fit: BoxFit.cover,
+                  alignment: const Alignment(0.6, -0.3),
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: const Color(0xFF161A23),
                   ),
-                  child: Text(
-                    tag,
+                ),
+              ),
+            ),
+
+            // Content Overlay
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
                     style: GoogleFonts.poppins(
-                      color: accentColor,
-                      fontSize: 10,
+                      color: Colors.white,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                      height: 1.25,
                     ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  title,
-                  maxLines: 2,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
+                  const SizedBox(height: 12),
+                  // Small pill-shaped "Explore Now" button
+                  GestureDetector(
+                    onTap: () => context.push('/search'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F1219),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white24, width: 0.8),
+                      ),
+                      child: Text(
+                        buttonText,
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => context.push('/search'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                ],
               ),
             ),
-            child: Text(
-              buttonText,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
+  /// Circular Avatar-Style Category Row matching the reference layout
   Widget _buildCategoriesRow(List<Category> categories) {
     return SizedBox(
-      height: 90,
+      height: 92,
       child: ListView.builder(
         key: const Key('home_categories_list'),
         scrollDirection: Axis.horizontal,
@@ -418,6 +415,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final cat = categories[index];
+          // NOTE: Circular avatar category icon placeholders. Flagged for real photo assets.
           return GestureDetector(
             key: Key('category_item_${cat.slug}'),
             onTap: () => context.push('/categories/${cat.slug}'),
@@ -426,24 +424,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 children: [
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 58,
+                    height: 58,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFFEEF1F6), // Soft light-grey circular avatar background
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey[200]!),
+                      border: Border.all(color: Colors.white, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
                       ],
                     ),
-                    child: Icon(
-                      _getCategoryIcon(cat.iconName),
-                      color: const Color(0xFF6C63FF),
-                      size: 26,
+                    child: Center(
+                      child: Icon(
+                        _getCategoryIcon(cat.iconName),
+                        color: const Color(0xFF1E1E2D),
+                        size: 24,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -502,7 +502,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Text(
                 'View all',
                 style: GoogleFonts.poppins(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF6C63FF),
                 ),
