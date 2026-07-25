@@ -21,10 +21,15 @@ class ShellTab {
 }
 
 final List<ShellTab> tabs = [
-  ShellTab(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home', path: '/home'),
   ShellTab(
-    icon: Icons.category_outlined,
-    activeIcon: Icons.category,
+    icon: Icons.home_outlined,
+    activeIcon: Icons.home,
+    label: 'Home',
+    path: '/home',
+  ),
+  ShellTab(
+    icon: Icons.grid_view_outlined,
+    activeIcon: Icons.grid_view,
     label: 'Categories',
     path: '/categories',
   ),
@@ -40,7 +45,12 @@ final List<ShellTab> tabs = [
     label: 'Cart',
     path: '/cart',
   ),
-  ShellTab(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile', path: '/profile'),
+  ShellTab(
+    icon: Icons.person_outline,
+    activeIcon: Icons.person,
+    label: 'Profile',
+    path: '/profile',
+  ),
 ];
 
 class ShellScaffold extends StatelessWidget {
@@ -66,16 +76,20 @@ class ShellScaffold extends StatelessWidget {
         onTap: (index) => context.go(tabs[index].path),
         type: BottomNavigationBarType.fixed,
         backgroundColor: AppColors.white,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.cardBorder,
+        selectedItemColor: AppColors.primary, // Solid primary purple (#6C63FF)
+        unselectedItemColor: const Color(0xFF8A8D9F), // Muted gray outline style
+        elevation: 8,
         selectedLabelStyle: AppTextStyles.caption.copyWith(
           fontWeight: FontWeight.w600,
+          color: AppColors.primary,
         ),
-        unselectedLabelStyle: AppTextStyles.caption,
+        unselectedLabelStyle: AppTextStyles.caption.copyWith(
+          color: const Color(0xFF8A8D9F),
+        ),
         items: tabs.map((tab) {
           return BottomNavigationBarItem(
-            icon: Icon(tab.icon),
-            activeIcon: Icon(tab.activeIcon),
+            icon: Icon(tab.icon, size: 24),
+            activeIcon: Icon(tab.activeIcon, size: 24),
             label: tab.label,
           );
         }).toList(),

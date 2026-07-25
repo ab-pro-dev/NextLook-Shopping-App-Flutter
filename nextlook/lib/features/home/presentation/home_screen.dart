@@ -9,8 +9,6 @@ import '../../products/data/category_model.dart';
 import '../../products/data/product_card_model.dart';
 
 /// Real Home Screen for NextLook matching the exact UI spec from The_App_UI.png
-/// (Top search bar first, lifestyle photo banner, categories in exact order:
-/// Men, Women, Kids, Shoes, Accessories, Flash Sale with timer & product cards).
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -104,14 +102,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               const SizedBox(height: 12),
 
-              // 1. TOP OF SCREEN: Search Bar directly at the top (NO app header/bell icon above it)
+              // 1. TOP OF SCREEN: Search Bar directly at the top
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
                 child: GestureDetector(
                   key: const Key('home_search_bar'),
                   onTap: () => context.push('/search'),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -143,11 +141,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
-              // 2. BANNER: Dark photo-style background with lifestyle model, New Collection 2026, Explore Now pill button
+              // 2. HERO BANNER SLIDER (Height increased ~18% to 190px for proper breathing room)
               SizedBox(
-                height: 160,
+                height: 190,
                 child: PageView(
                   key: const Key('home_banner_slider'),
                   controller: _bannerController,
@@ -158,19 +156,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                   children: [
                     _buildLifestyleBannerCard(
-                      tag: 'NEW COLLECTION 2026',
                       title: 'New Collection\n2026',
                       buttonText: 'Explore Now',
                       imageAsset: 'assets/images/onboarding_model_bg.jpg',
                     ),
                     _buildLifestyleBannerCard(
-                      tag: 'FLASH SALE WEEKEND',
                       title: 'Up to 50% Off\nSelected Items',
                       buttonText: 'Shop Sale',
                       imageAsset: 'assets/images/onboarding_model_bg.jpg',
                     ),
                     _buildLifestyleBannerCard(
-                      tag: 'TRENDING FASHION',
                       title: 'Discover Modern\nEssential Styles',
                       buttonText: 'Explore',
                       imageAsset: 'assets/images/onboarding_model_bg.jpg',
@@ -178,16 +173,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
 
-              // Banner Dot Indicators (Matching reference spacing & style)
+              // Banner Dot Indicators
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(3, (index) {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: _activeBannerIndex == index ? 18 : 6,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _activeBannerIndex == index ? 20 : 6,
                     height: 6,
                     decoration: BoxDecoration(
                       color: _activeBannerIndex == index ? darkNavy : Colors.grey[300],
@@ -198,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
 
-              // 3. CATEGORIES ROW: Fixed order (Men, Women, Kids, Shoes, Accessories) with circular avatar styling
+              // 3. CATEGORIES ROW: Fixed order (Men, Women, Kids, Shoes, Accessories)
               _buildSectionHeader(
                 title: 'Categories',
                 onViewAll: null,
@@ -308,7 +303,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// Banner Card with dark lifestyle photo background & pill button matching the reference mockup
   Widget _buildLifestyleBannerCard({
-    required String tag,
     required String title,
     required String buttonText,
     required String imageAsset,
@@ -318,7 +312,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20.0),
       decoration: BoxDecoration(
         color: const Color(0xFF161A23),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.15),
@@ -328,7 +322,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         child: Stack(
           children: [
             // Background lifestyle photo image with dark gradient overlay
@@ -358,9 +352,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
 
-            // Content Overlay
+            // Content Overlay with generous padding & breathing room
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(22.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -369,17 +363,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     title,
                     style: GoogleFonts.poppins(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       height: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   // Small pill-shaped "Explore Now" button
                   GestureDetector(
                     onTap: () => context.push('/search'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0F1219),
                         borderRadius: BorderRadius.circular(20),
@@ -388,7 +382,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Text(
                         buttonText,
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
