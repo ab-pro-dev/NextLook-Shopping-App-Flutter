@@ -10,15 +10,25 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+  // Phase flag: false = Splash Welcome View (Get Started), true = 3-Screen Onboarding Flow
+  bool _showOnboardingFlow = false;
+
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  bool _isButtonPressed = false;
+  bool _isGetStartedPressed = false;
+  bool _isActionButtonPressed = false;
 
   final List<String> _onboardingImages = const [
     'assets/images/screen_1.png',
     'assets/images/screen_2.png',
     'assets/images/screen_3.png',
   ];
+
+  void _onGetStartedTap() {
+    setState(() {
+      _showOnboardingFlow = true;
+    });
+  }
 
   void _onSkipTap() {
     context.go('/home');
@@ -47,13 +57,135 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final topPadding = mediaQuery.padding.top;
     final bottomPadding = mediaQuery.padding.bottom;
 
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      switchInCurve: Curves.easeInOut,
+      switchOutCurve: Curves.easeInOut,
+      child: !_showOnboardingFlow
+          ? _buildSplashWelcomeView(context, bottomPadding)
+          : _buildOnboardingFlowView(context, topPadding, bottomPadding),
+    );
+  }
+
+  /// 1. Initial Splash Welcome View (NextLook artwork + Get Started button)
+  Widget _buildSplashWelcomeView(BuildContext context, double bottomPadding) {
+    return Scaffold(
+      key: const ValueKey('SplashWelcomeView'),
+      backgroundColor: const Color(0xFF070B16), // Deep navy/black
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // NextLook Splash Artwork (Hanger Logo + NextLook title + Subline + Model)
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/nextlook_splash_bg.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: const Color(0xFF070B16),
+                  child: const Center(
+                    child: Icon(
+                      Icons.shopping_bag_outlined,
+                      size: 80,
+                      color: Colors.white24,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Bottom Gradient overlay for button contrast
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 180,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Color(0xCC070B16),
+                    Color(0xFF070B16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Coral/Pink "Get Started" Pill Button
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 32,
+                  right: 32,
+                  bottom: bottomPadding > 0 ? 16 : 32,
+                ),
+                child: GestureDetector(
+                  onTapDown: (_) => setState(() => _isGetStartedPressed = true),
+                  onTapUp: (_) {
+                    setState(() => _isGetStartedPressed = false);
+                    _onGetStartedTap();
+                  },
+                  onTapCancel: () => setState(() => _isGetStartedPressed = false),
+                  child: AnimatedScale(
+                    scale: _isGetStartedPressed ? 0.95 : 1.0,
+                    duration: const Duration(milliseconds: 100),
+                    curve: Curves.easeOutCubic,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      decoration: BoxDecoration(
+                        color: _isGetStartedPressed
+                            ? const Color(0xFFD63E45)
+                            : const Color(0xFFF2545B), // Coral/pink (#F2545B)
+                        borderRadius: BorderRadius.circular(50),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF2545B).withValues(alpha: 0.45),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'Get Started',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 2. 3-Screen Onboarding Flow View (screen_1.png, screen_2.png, screen_3.png)
+  Widget _buildOnboardingFlowView(BuildContext context, double topPadding, double bottomPadding) {
     final isLastPage = _currentPage == _onboardingImages.length - 1;
 
     return Scaffold(
+      key: const ValueKey('OnboardingFlowView'),
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. PageView for the 3 Onboarding Screens
+          // PageView for screen_1.png, screen_2.png, screen_3.png
           PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -67,7 +199,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 color: Colors.white,
                 child: Column(
                   children: [
-                    SizedBox(height: topPadding + 48), // Leave space for top-right Skip button
+                    SizedBox(height: topPadding + 48), // Space for top-right Skip button
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -101,14 +233,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 120), // Reserve bottom space for dots & button
+                    const SizedBox(height: 120), // Bottom space for dots & action button
                   ],
                 ),
               );
             },
           ),
 
-          // 2. Top-Right "Skip" Button
+          // Top-Right "Skip" Button (dark text on white background)
           Positioned(
             top: topPadding + 8,
             right: 16,
@@ -135,7 +267,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
 
-          // 3. Bottom Controls (Pagination Dots + Dark Pill Action Button)
+          // Bottom Controls (3 Pagination Dots + Dark Pill Next/Finish Button)
           Positioned(
             left: 0,
             right: 0,
@@ -175,16 +307,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Action Button ("Next" for Screens 1 & 2, "Finish" for Screen 3)
+                  // Dark Pill Action Button ("Next" for Screens 1 & 2, "Finish" for Screen 3)
                   GestureDetector(
-                    onTapDown: (_) => setState(() => _isButtonPressed = true),
+                    onTapDown: (_) => setState(() => _isActionButtonPressed = true),
                     onTapUp: (_) {
-                      setState(() => _isButtonPressed = false);
+                      setState(() => _isActionButtonPressed = false);
                       _onNextTap();
                     },
-                    onTapCancel: () => setState(() => _isButtonPressed = false),
+                    onTapCancel: () => setState(() => _isActionButtonPressed = false),
                     child: AnimatedScale(
-                      scale: _isButtonPressed ? 0.96 : 1.0,
+                      scale: _isActionButtonPressed ? 0.96 : 1.0,
                       duration: const Duration(milliseconds: 100),
                       curve: Curves.easeOutCubic,
                       child: AnimatedContainer(
@@ -192,8 +324,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          color: _isButtonPressed
-                              ? const Color(0xFF141420) // Slightly darker navy on press
+                          color: _isActionButtonPressed
+                              ? const Color(0xFF141420)
                               : const Color(0xFF1E1E2E), // Dark Navy/Black (#1E1E2E)
                           borderRadius: BorderRadius.circular(50),
                           boxShadow: [
