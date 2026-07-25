@@ -12,6 +12,7 @@ import 'features/auth/presentation/splash_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/products/categories_screen.dart';
 import 'features/products/presentation/category_products_screen.dart';
+import 'features/products/presentation/product_detail_screen.dart';
 import 'features/wishlist/wishlist_screen.dart';
 import 'features/cart/cart_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -122,16 +123,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/product/:id',
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return Scaffold(
-            appBar: AppBar(title: Text('Product Detail', style: GoogleFonts.poppins())),
-            body: Center(
-              child: Text(
-                'Product Detail Screen Placeholder\nProduct ID: $id',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 16),
-              ),
-            ),
-          );
+          return ProductDetailScreen(productId: id);
         },
       ),
 

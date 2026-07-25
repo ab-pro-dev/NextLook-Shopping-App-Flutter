@@ -1,0 +1,95 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:nextlook/features/products/application/product_providers.dart';
+import 'package:nextlook/features/products/data/product_detail_model.dart';
+import 'package:nextlook/features/products/presentation/product_detail_screen.dart';
+
+void main() {
+  const fakeDetail = ProductDetail(
+    id: '4c40a244-09d6-41ed-911c-1d0fdb0fb5e0',
+    name: 'Classic Leather Biker Jacket',
+    description: 'Premium genuine lambskin leather jacket with asymmetrical zip closure.',
+    brand: 'UrbanEdge',
+    categoryName: 'Men',
+    categorySlug: 'men',
+    price: 199.99,
+    discountPrice: 149.99,
+    rating: 4.8,
+    reviewCount: 124,
+    images: [
+      ProductImage(id: 'img1', url: 'https://picsum.photos/800/800', sortOrder: 0),
+      ProductImage(id: 'img2', url: 'https://picsum.photos/800/800', sortOrder: 1),
+    ],
+    colors: [
+      ProductColor(id: 'c1', name: 'Black', hexCode: '#000000'),
+      ProductColor(id: 'c2', name: 'Dark Brown', hexCode: '#3E2723'),
+    ],
+    sizes: [
+      ProductSize(id: 's1', label: 'S', stock: 10),
+      ProductSize(id: 's2', label: 'M', stock: 15),
+      ProductSize(id: 's3', label: 'L', stock: 20),
+      ProductSize(id: 's4', label: 'XL', stock: 0), // Out of stock
+    ],
+    sku: 'MEN-JKT-001',
+    isFlashSale: true,
+    isNewArrival: false,
+    isTrending: true,
+    isBestSeller: true,
+  );
+
+  testWidgets('ProductDetailScreen renders info, out-of-stock size XL, and enables buttons on selection', (tester) async {
+    GoogleFonts.config.allowRuntimeFetching = false;
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          productDetailProvider('4c40a244-09d6-41ed-911c-1d0fdb0fb5e0')
+              .overrideWith((ref) async => fakeDetail),
+        ],
+        child: const MaterialApp(
+          home: ProductDetailScreen(productId: '4c40a244-09d6-41ed-911c-1d0fdb0fb5e0'),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Verify Title, Brand, Price, Rating
+    expect(find.text('Classic Leather Biker Jacket'), findsOneWidget);
+    expect(find.text('UrbanEdge'), findsOneWidget);
+    expect(find.text('\$149.99'), findsOneWidget);
+    expect(find.text('\$199.99'), findsOneWidget);
+    expect(find.text('-25%'), findsOneWidget);
+    expect(find.text('4.8'), findsOneWidget);
+    expect(find.text('(124)'), findsOneWidget);
+
+    // Verify Colors and Sizes
+    expect(find.byKey(const Key('color_swatch_Black')), findsOneWidget);
+    expect(find.byKey(const Key('size_chip_S')), findsOneWidget);
+    expect(find.byKey(const Key('size_chip_XL')), findsOneWidget);
+
+    // Ensure elements are visible and tap
+    await tester.ensureVisible(find.byKey(const Key('color_swatch_Black')));
+    await tester.tap(find.byKey(const Key('color_swatch_Black')));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    await tester.ensureVisible(find.byKey(const Key('size_chip_M')));
+    await tester.tap(find.byKey(const Key('size_chip_M')));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // Tap Add to Cart after selection - shows coming soon snackbar
+    await tester.ensureVisible(find.byKey(const Key('add_to_cart_button')));
+    await tester.tap(find.byKey(const Key('add_to_cart_button')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Coming soon! Cart & Checkout logic will be enabled in the next phase.'), findsOneWidget);
+
+    // Toggle Wishlist Heart
+    expect(find.byKey(const Key('wishlist_heart_button')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('wishlist_heart_button')), warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 100));
+  });
+}
