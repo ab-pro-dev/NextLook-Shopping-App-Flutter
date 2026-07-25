@@ -11,6 +11,7 @@ import 'features/auth/presentation/register_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/products/categories_screen.dart';
+import 'features/products/presentation/category_products_screen.dart';
 import 'features/wishlist/wishlist_screen.dart';
 import 'features/cart/cart_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -107,30 +108,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/categories/:slug',
         builder: (context, state) {
           final slug = state.pathParameters['slug'] ?? '';
-          return Scaffold(
-            appBar: AppBar(title: Text('Category: $slug', style: GoogleFonts.poppins())),
-            body: Center(
-              child: Text(
-                'Category Products Screen Placeholder ($slug)',
-                style: GoogleFonts.poppins(fontSize: 16),
-              ),
-            ),
-          );
+          return CategoryProductsScreen(categorySlug: slug);
         },
       ),
       GoRoute(
         path: '/categories/:slug/products',
         builder: (context, state) {
           final slug = state.pathParameters['slug'] ?? '';
-          return Scaffold(
-            appBar: AppBar(title: Text('Category: $slug', style: GoogleFonts.poppins())),
-            body: Center(
-              child: Text(
-                'Category Products Screen Placeholder ($slug)',
-                style: GoogleFonts.poppins(fontSize: 16),
-              ),
-            ),
-          );
+          return CategoryProductsScreen(categorySlug: slug);
         },
       ),
       GoRoute(
