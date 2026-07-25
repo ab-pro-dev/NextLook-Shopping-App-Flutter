@@ -46,8 +46,5 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(actionTapped, isTrue);
-
-    // Finish any remaining timers
-    await tester.pump(const Duration(seconds: 3));
   });
 }
