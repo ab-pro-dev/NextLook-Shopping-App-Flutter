@@ -40,8 +40,8 @@ final List<ShellTab> tabs = [
     path: '/wishlist',
   ),
   ShellTab(
-    icon: Icons.shopping_cart_outlined,
-    activeIcon: Icons.shopping_cart,
+    icon: Icons.shopping_bag_outlined,
+    activeIcon: Icons.shopping_bag,
     label: 'Cart',
     path: '/cart',
   ),
