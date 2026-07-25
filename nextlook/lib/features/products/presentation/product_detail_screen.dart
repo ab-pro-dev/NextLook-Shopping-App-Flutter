@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/success_toast.dart';
 import '../../cart/application/cart_providers.dart';
 import '../../wishlist/application/wishlist_providers.dart';
 import '../application/product_providers.dart';
@@ -81,13 +82,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         quantity: 1,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Added to cart', style: GoogleFonts.poppins()),
-            backgroundColor: const Color(0xFF6C63FF),
-            duration: const Duration(seconds: 2),
-          ),
+        final product = ref.read(productDetailProvider(widget.productId)).valueOrNull;
+        final productName = product?.name ?? 'Item';
+        final router = GoRouter.maybeOf(context);
+
+        AppToast.show(
+          context,
+          title: 'Added to Cart',
+          subtitle: productName,
+          actionLabel: 'View Cart',
+          onActionTap: () {
+            if (router != null) {
+              router.push('/cart');
+            } else if (context.mounted) {
+              Navigator.of(context).pushNamed('/cart');
+            }
+          },
         );
       }
     } on ApiException catch (e) {

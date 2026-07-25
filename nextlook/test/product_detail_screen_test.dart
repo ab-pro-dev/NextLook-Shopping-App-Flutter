@@ -106,12 +106,16 @@ void main() {
     // Tap Add to Cart after selection - calls addToCart and shows snackbar
     await tester.ensureVisible(find.byKey(const Key('add_to_cart_button')));
     await tester.tap(find.byKey(const Key('add_to_cart_button')));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Added to cart'), findsOneWidget);
+    expect(find.text('Added to Cart'), findsOneWidget);
 
     // Toggle Wishlist Heart
     expect(find.byKey(const Key('wishlist_heart_button')), findsOneWidget);
     await tester.tap(find.byKey(const Key('wishlist_heart_button')), warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 100));
+
+    // Finish any remaining toast auto-dismiss timers
+    await tester.pump(const Duration(seconds: 3));
   });
 }
