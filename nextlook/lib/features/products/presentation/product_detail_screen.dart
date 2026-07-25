@@ -49,11 +49,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
   void _onAddToCartTap() {
     if (!_canAddToCart) {
+      String hint = 'Please select a size';
+      if (_selectedColor == null && _selectedSize == null) {
+        hint = 'Please select a color and a size';
+      } else if (_selectedColor == null) {
+        hint = 'Please select a color';
+      }
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Please select a color and an available size',
+            hint,
             style: GoogleFonts.poppins(),
           ),
           backgroundColor: const Color(0xFF1E1E2D),
@@ -406,12 +412,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                       decoration: BoxDecoration(
                                         color: isOutOfStock
                                             ? Colors.grey[200]
-                                            : (isSelected ? darkNavy : Colors.white),
+                                            : (isSelected ? primaryPurple : Colors.white),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: isOutOfStock
                                               ? Colors.grey[300]!
-                                              : (isSelected ? darkNavy : Colors.grey[300]!),
+                                              : (isSelected ? primaryPurple : Colors.grey[300]!),
                                         ),
                                       ),
                                       child: Center(
