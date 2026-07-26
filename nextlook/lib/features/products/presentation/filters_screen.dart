@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../application/product_providers.dart';
 import '../data/product_query_params.dart';
 
@@ -18,6 +19,8 @@ class FiltersScreen extends ConsumerStatefulWidget {
 }
 
 class _FiltersScreenState extends ConsumerState<FiltersScreen> {
+  static const double _maxBirrLimit = 15000.0;
+
   late RangeValues _priceRange;
   late String? _selectedCategory;
   late String? _selectedColor;
@@ -41,7 +44,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
     super.initState();
     _priceRange = RangeValues(
       widget.currentParams.minPrice ?? 0.0,
-      widget.currentParams.maxPrice ?? 200.0,
+      widget.currentParams.maxPrice ?? _maxBirrLimit,
     );
     _selectedCategory = widget.currentParams.category;
     _selectedColor = widget.currentParams.color;
@@ -51,7 +54,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
 
   void _onReset() {
     setState(() {
-      _priceRange = const RangeValues(0.0, 200.0);
+      _priceRange = const RangeValues(0.0, _maxBirrLimit);
       _selectedColor = null;
       _selectedSize = null;
       _selectedRating = null;
@@ -62,12 +65,12 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
     final updated = widget.currentParams.copyWith(
       category: _selectedCategory,
       minPrice: _priceRange.start > 0 ? _priceRange.start : null,
-      maxPrice: _priceRange.end < 200 ? _priceRange.end : null,
+      maxPrice: _priceRange.end < _maxBirrLimit ? _priceRange.end : null,
       color: _selectedColor,
       size: _selectedSize,
       minRating: _selectedRating,
       clearMinPrice: _priceRange.start == 0,
-      clearMaxPrice: _priceRange.end == 200,
+      clearMaxPrice: _priceRange.end == _maxBirrLimit,
       clearColor: _selectedColor == null,
       clearSize: _selectedSize == null,
       clearMinRating: _selectedRating == null,
@@ -149,7 +152,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '\$${_priceRange.start.round()}',
+                  formatPrice(_priceRange.start),
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -157,7 +160,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                   ),
                 ),
                 Text(
-                  '\$${_priceRange.end.round()}',
+                  formatPrice(_priceRange.end),
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -169,13 +172,13 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
             RangeSlider(
               values: _priceRange,
               min: 0,
-              max: 200,
-              divisions: 20,
+              max: _maxBirrLimit,
+              divisions: 30,
               activeColor: primaryPurple,
               inactiveColor: Colors.grey[200],
               labels: RangeLabels(
-                '\$${_priceRange.start.round()}',
-                '\$${_priceRange.end.round()}',
+                formatPrice(_priceRange.start),
+                formatPrice(_priceRange.end),
               ),
               onChanged: (values) {
                 setState(() {

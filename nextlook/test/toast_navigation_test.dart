@@ -169,7 +169,7 @@ void main() {
     // Tap View Cart after 1 second delay
     await tester.tap(find.byKey(const Key('toast_action_button')));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify clean navigation to CartScreen
     expect(find.text('Cart'), findsOneWidget);

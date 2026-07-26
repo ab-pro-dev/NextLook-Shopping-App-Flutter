@@ -22,8 +22,8 @@ void main() {
     id: 'p1',
     name: 'Elegance Trench Coat',
     brand: 'NextLook Studio',
-    price: 249.99,
-    discountPrice: 179.99,
+    price: 12500,
+    discountPrice: 9000,
     rating: 4.8,
     reviewCount: 34,
     thumbnailUrl: null,
@@ -71,7 +71,7 @@ void main() {
 
     expect(find.text('Elegance Trench Coat'), findsOneWidget);
     expect(find.text('NextLook Studio'), findsOneWidget);
-    expect(find.text('\$179.99'), findsOneWidget);
+    expect(find.text('ETB 9,000'), findsOneWidget);
     expect(find.byKey(const Key('remove_wishlist_heart_p1')), findsOneWidget);
   });
 }

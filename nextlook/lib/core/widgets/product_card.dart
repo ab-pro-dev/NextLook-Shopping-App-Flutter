@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/products/data/product_card_model.dart';
 import '../../features/wishlist/application/wishlist_providers.dart';
+import '../utils/currency_formatter.dart';
 
 /// Reusable Product Card Widget matching NextLook design specs.
 class ProductCardWidget extends StatelessWidget {
@@ -227,7 +228,7 @@ class ProductCardWidget extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
-                          '\$${(product.hasDiscount ? product.discountPrice! : product.price).toStringAsFixed(2)}',
+                          formatPrice(product.hasDiscount ? product.discountPrice! : product.price),
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -237,7 +238,7 @@ class ProductCardWidget extends StatelessWidget {
                         if (product.hasDiscount) ...[
                           const SizedBox(width: 4),
                           Text(
-                            '\$${product.price.toStringAsFixed(2)}',
+                            formatPrice(product.price),
                             key: Key('product_strikethrough_price_${product.id}'),
                             style: GoogleFonts.poppins(
                               fontSize: 10,

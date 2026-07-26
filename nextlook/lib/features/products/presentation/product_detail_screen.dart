@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/success_toast.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../cart/application/cart_providers.dart';
 import '../../wishlist/application/wishlist_providers.dart';
 import '../application/product_providers.dart';
@@ -93,9 +94,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           actionLabel: 'View Cart',
           onActionTap: () {
             if (router != null) {
-              router.push('/cart');
+              router.go('/cart');
             } else if (context.mounted) {
-              Navigator.of(context).pushNamed('/cart');
+              try {
+                context.go('/cart');
+              } catch (_) {
+                Navigator.of(context).pushNamed('/cart');
+              }
             }
           },
         );
@@ -111,17 +116,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           ),
         );
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add to cart', style: GoogleFonts.poppins()),
-            backgroundColor: Colors.redAccent,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+    } catch (e, st) {
+      debugPrint('[ADD TO CART UNCAUGHT ERROR]: $e\n$st');
     }
   }
 
@@ -138,6 +134,15 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       backgroundColor: backgroundColor,
       body: productDetailAsync.when(
         data: (product) {
+          if (_selectedColor == null && product.colors.isNotEmpty) {
+            _selectedColor = product.colors.first;
+          }
+          if (_selectedSize == null && product.sizes.isNotEmpty) {
+            _selectedSize = product.sizes.firstWhere(
+              (s) => !s.isOutOfStock,
+              orElse: () => product.sizes.first,
+            );
+          }
           final images = List<ProductImage>.from(product.images)
             ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
@@ -330,7 +335,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
-                                '\$${(product.hasDiscount ? product.discountPrice! : product.price).toStringAsFixed(2)}',
+                                formatPrice(product.hasDiscount ? product.discountPrice! : product.price),
                                 style: GoogleFonts.poppins(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -340,7 +345,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               if (product.hasDiscount) ...[
                                 const SizedBox(width: 8),
                                 Text(
-                                  '\$${product.price.toStringAsFixed(2)}',
+                                  formatPrice(product.price),
                                   style: GoogleFonts.poppins(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,

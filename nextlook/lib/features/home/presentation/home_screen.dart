@@ -7,6 +7,7 @@ import '../../../core/widgets/product_card.dart';
 import '../../products/application/product_providers.dart';
 import '../../products/data/category_model.dart';
 import '../../products/data/product_card_model.dart';
+import '../../notifications/application/notification_providers.dart';
 
 /// Real Home Screen for NextLook matching the exact UI spec from The_App_UI.png
 class HomeScreen extends ConsumerStatefulWidget {
@@ -102,43 +103,104 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               const SizedBox(height: 12),
 
-              // 1. TOP OF SCREEN: Search Bar directly at the top
+              // 1. TOP OF SCREEN: Search Bar + Notification Bell Icon
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
-                child: GestureDetector(
-                  key: const Key('home_search_bar'),
-                  onTap: () => context.push('/search'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search_rounded, color: Colors.grey, size: 22),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Search products, brands...',
-                            style: GoogleFonts.poppins(
-                              color: Colors.grey[400],
-                              fontSize: 14,
-                            ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        key: const Key('home_search_bar'),
+                        onTap: () => context.push('/search'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey[200]!),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.search_rounded, color: Colors.grey, size: 22),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Search products, brands...',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              const Icon(Icons.tune_rounded, color: Colors.grey, size: 20),
+                            ],
                           ),
                         ),
-                        const Icon(Icons.tune_rounded, color: Colors.grey, size: 20),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final unreadCount = ref.watch(unreadNotificationCountProvider);
+
+                        return GestureDetector(
+                          key: const Key('home_notification_bell'),
+                          onTap: () => context.push('/notifications'),
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey[200]!),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                const Icon(Icons.notifications_outlined, color: darkNavy, size: 24),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    top: 10,
+                                    right: 10,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: primaryPurple,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        '$unreadCount',
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 18),

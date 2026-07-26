@@ -7,6 +7,8 @@ import productRoutes from './routes/productRoutes';
 import wishlistRoutes from './routes/wishlistRoutes';
 import addressRoutes from './routes/addressRoutes';
 import cartRoutes from './routes/cartRoutes';
+import orderRoutes from './routes/orderRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 
 dotenv.config();
 
@@ -34,6 +36,12 @@ app.use('/addresses', addressRoutes);
 
 app.use('/api/cart', cartRoutes);
 app.use('/cart', cartRoutes);
+
+app.use('/api/orders', orderRoutes);
+app.use('/orders', orderRoutes);
+
+app.use('/api/notifications', notificationRoutes);
+app.use('/notifications', notificationRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });

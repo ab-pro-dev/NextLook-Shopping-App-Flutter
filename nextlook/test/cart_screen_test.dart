@@ -24,12 +24,12 @@ void main() {
     name: 'Classic Leather Biker Jacket',
     brand: 'UrbanEdge',
     thumbnailUrl: null,
-    price: 199.99,
-    discountPrice: 149.99,
+    price: 10000,
+    discountPrice: 7500,
     colorName: 'Black',
     sizeLabel: 'M',
     quantity: 2,
-    lineTotal: 299.98,
+    lineTotal: 15000,
     inStock: true,
   );
 
@@ -63,7 +63,11 @@ void main() {
         overrides: [
           cartProvider.overrideWith(
             () => FakeCartNotifier(
-              const CartSummary(items: [fakeItem], subtotal: 299.98, itemCount: 2),
+              const CartSummary(
+                items: [fakeItem],
+                subtotal: 15000,
+                itemCount: 2,
+              ),
             ),
           ),
         ],
@@ -76,7 +80,7 @@ void main() {
 
     expect(find.text('Classic Leather Biker Jacket'), findsOneWidget);
     expect(find.text('Color: Black  |  Size: M'), findsOneWidget);
-    expect(find.text('\$299.98'), findsNWidgets(3)); // line total, subtotal & total
+    expect(find.text('ETB 15,000'), findsNWidgets(3)); // line total, subtotal & total
     expect(find.byKey(const Key('cart_item_row_item1')), findsOneWidget);
     expect(find.byKey(const Key('checkout_button')), findsOneWidget);
   });

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../application/wishlist_providers.dart';
+import '../../../core/utils/currency_formatter.dart';
 
 class WishlistScreen extends ConsumerWidget {
   const WishlistScreen({super.key});
@@ -204,7 +205,7 @@ class WishlistScreen extends ConsumerWidget {
                                         Row(
                                           children: [
                                             Text(
-                                              '\$${(product.hasDiscount ? product.discountPrice! : product.price).toStringAsFixed(2)}',
+                                              formatPrice(product.hasDiscount ? product.discountPrice! : product.price),
                                               style: GoogleFonts.poppins(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.bold,
@@ -214,7 +215,7 @@ class WishlistScreen extends ConsumerWidget {
                                             if (product.hasDiscount) ...[
                                               const SizedBox(width: 6),
                                               Text(
-                                                '\$${product.price.toStringAsFixed(2)}',
+                                                formatPrice(product.price),
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 11,
                                                   color: Colors.grey[400],

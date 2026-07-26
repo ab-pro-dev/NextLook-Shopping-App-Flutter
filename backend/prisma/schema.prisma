@@ -18,6 +18,28 @@ model User {
   wishlists    Wishlist[]
   addresses    Address[]
   cart         Cart?
+  orders       Order[]
+  notifications Notification[]
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  PROMOTION
+  GENERAL
+}
+
+model Notification {
+  id             String           @id @default(uuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           NotificationType
+  title          String
+  body           String
+  isRead         Boolean          @default(false)
+  relatedOrderId String?
+  createdAt      DateTime         @default(now())
+
+  @@index([userId])
 }
 
 model Category {
@@ -53,6 +75,7 @@ model Product {
   sizes         ProductSize[]
   wishlists     Wishlist[]
   cartItems     CartItem[]
+  orderItems    OrderItem[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -140,4 +163,69 @@ model CartItem {
 
   @@unique([cartId, productId, colorName, sizeLabel])
   @@index([cartId])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id                   String               @id @default(uuid())
+  userId               String
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderNumber          String               @unique
+  status               OrderStatus          @default(PENDING)
+  subtotal             Int
+  shippingCost         Int
+  tax                  Int
+  total                Int
+  deliveryMethodLabel String
+  shippingFullName     String
+  shippingPhone        String
+  shippingAddressLine1 String
+  shippingAddressLine2 String?
+  shippingCity         String
+  shippingRegion       String
+  shippingCountry      String
+  paymentMethod        String
+  items                OrderItem[]
+  statusHistory        OrderStatusHistory[]
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id                  String   @id @default(uuid())
+  orderId             String
+  order               Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId           String
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productName         String
+  productThumbnailUrl String
+  colorName           String
+  sizeLabel           String
+  quantity            Int
+  unitPrice           Int
+  lineTotal           Int
+  createdAt           DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  createdAt DateTime    @default(now())
+
+  @@index([orderId])
 }

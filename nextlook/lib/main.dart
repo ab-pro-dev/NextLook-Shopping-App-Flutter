@@ -15,7 +15,12 @@ import 'features/products/presentation/category_products_screen.dart';
 import 'features/products/presentation/product_detail_screen.dart';
 import 'features/wishlist/wishlist_screen.dart';
 import 'features/cart/cart_screen.dart';
+import 'features/checkout/presentation/checkout_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/orders/presentation/order_success_screen.dart';
+import 'features/orders/presentation/orders_list_screen.dart';
+import 'features/orders/presentation/order_tracking_screen.dart';
+import 'features/notifications/presentation/notifications_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -128,16 +133,34 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/checkout',
-        builder: (context, state) => Scaffold(
-          appBar: AppBar(title: Text('Checkout', style: GoogleFonts.poppins())),
-          body: Center(
-            child: Text(
-              'Checkout Screen Placeholder\nFlow will be connected in Step 5',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 16),
-            ),
-          ),
-        ),
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: '/order-success',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final orderNumber = extra?['orderNumber'] as String? ?? state.uri.queryParameters['orderNumber'] ?? '';
+          final orderId = extra?['orderId'] as String? ?? state.uri.queryParameters['orderId'] ?? '';
+          return OrderSuccessScreen(
+            orderNumber: orderNumber,
+            orderId: orderId,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/orders',
+        builder: (context, state) => const OrdersListScreen(),
+      ),
+      GoRoute(
+        path: '/orders/:id/tracking',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return OrderTrackingScreen(orderId: id);
+        },
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
 
       ShellRoute(

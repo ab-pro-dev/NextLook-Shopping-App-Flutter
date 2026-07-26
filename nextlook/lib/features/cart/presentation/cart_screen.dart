@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../application/cart_providers.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -215,7 +216,7 @@ class CartScreen extends ConsumerWidget {
                                           Row(
                                             children: [
                                               Text(
-                                                '\$${item.lineTotal.toStringAsFixed(2)}',
+                                                formatPrice(item.lineTotal),
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.bold,
@@ -390,7 +391,7 @@ class CartScreen extends ConsumerWidget {
                                   style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
                                 ),
                                 Text(
-                                  '\$${cart.subtotal.toStringAsFixed(2)}',
+                                  formatPrice(cart.subtotal),
                                   style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: darkNavy),
                                 ),
                               ],
@@ -422,7 +423,7 @@ class CartScreen extends ConsumerWidget {
                                   style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
                                 ),
                                 Text(
-                                  '\$0.00',
+                                  formatPrice(0),
                                   style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500, color: darkNavy),
                                 ),
                               ],
@@ -438,7 +439,7 @@ class CartScreen extends ConsumerWidget {
                                   style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: darkNavy),
                                 ),
                                 Text(
-                                  '\$${cart.subtotal.toStringAsFixed(2)}',
+                                  formatPrice(cart.subtotal),
                                   style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: primaryPurple),
                                 ),
                               ],

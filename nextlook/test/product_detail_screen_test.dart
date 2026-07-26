@@ -22,7 +22,7 @@ class FakeCartNotifier extends CartNotifier {
     required int quantity,
   }) async {
     state = const AsyncValue.data(
-      CartSummary(items: [], subtotal: 149.99, itemCount: 1),
+      CartSummary(items: [], subtotal: 7500, itemCount: 1),
     );
   }
 }
@@ -35,8 +35,8 @@ void main() {
     brand: 'UrbanEdge',
     categoryName: 'Men',
     categorySlug: 'men',
-    price: 199.99,
-    discountPrice: 149.99,
+    price: 10000,
+    discountPrice: 7500,
     rating: 4.8,
     reviewCount: 124,
     images: [
@@ -60,7 +60,7 @@ void main() {
     isBestSeller: true,
   );
 
-  testWidgets('ProductDetailScreen renders info, out-of-stock size XL, and enables buttons on selection', (tester) async {
+  testWidgets('ProductDetailScreen renders title, brand, converted price, badges, colors & sizes', (tester) async {
     GoogleFonts.config.allowRuntimeFetching = false;
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3.0;
@@ -83,8 +83,8 @@ void main() {
     // Verify Title, Brand, Price, Rating
     expect(find.text('Classic Leather Biker Jacket'), findsOneWidget);
     expect(find.text('UrbanEdge'), findsOneWidget);
-    expect(find.text('\$149.99'), findsOneWidget);
-    expect(find.text('\$199.99'), findsOneWidget);
+    expect(find.text('ETB 7,500'), findsOneWidget);
+    expect(find.text('ETB 10,000'), findsOneWidget);
     expect(find.text('-25%'), findsOneWidget);
     expect(find.text('4.8'), findsOneWidget);
     expect(find.text('(124)'), findsOneWidget);
