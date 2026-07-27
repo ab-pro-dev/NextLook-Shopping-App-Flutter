@@ -4,9 +4,13 @@ import {
   createTelebirrCheckout,
   handleTelebirrNotify,
   handleTelebirrRedirect,
+  testTelebirrConnection,
 } from '../controllers/telebirrController';
 
 const router = Router();
+
+// GET /api/payments/telebirr/test-connection (Protected diagnostic endpoint)
+router.get('/test-connection', authenticateToken, testTelebirrConnection);
 
 // POST /api/payments/telebirr/create-checkout (Authenticated)
 router.post('/create-checkout', authenticateToken, createTelebirrCheckout);

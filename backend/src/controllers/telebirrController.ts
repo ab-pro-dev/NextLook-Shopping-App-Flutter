@@ -194,3 +194,60 @@ export async function handleTelebirrRedirect(req: Request, res: Response) {
   `;
   return res.status(200).send(html);
 }
+
+/**
+ * GET /api/payments/telebirr/test-connection
+ * Protected diagnostic endpoint to test applyFabricToken(), createPreOrder(), and buildCheckoutUrl() directly from Render server
+ */
+export async function testTelebirrConnection(req: AuthenticatedRequest, res: Response) {
+  try {
+    const config = getTelebirrConfig();
+
+    if (!config.fabricAppId || !config.appSecret || !config.merchantAppId || !config.privateKey) {
+      return res.status(400).json({
+        success: false,
+        message: 'Telebirr environment variables missing on Render server.',
+        configPresent: {
+          baseUrl: !!config.baseUrl,
+          webBaseUrl: !!config.webBaseUrl,
+          fabricAppId: !!config.fabricAppId,
+          appSecret: !!config.appSecret,
+          merchantAppId: !!config.merchantAppId,
+          merchantCode: !!config.merchantCode,
+          privateKey: !!config.privateKey,
+        },
+      });
+    }
+
+    // Step 1: applyFabricToken
+    const fabricToken = await applyFabricToken();
+
+    // Step 2: createPreOrder
+    const testOrderNumber = `SH${Math.floor(100000 + Math.random() * 900000)}`;
+    const prepayId = await createPreOrder(
+      fabricToken,
+      `Render Test Order #${testOrderNumber}`,
+      2500,
+      testOrderNumber
+    );
+
+    // Step 3: buildCheckoutUrl
+    const checkoutUrl = buildCheckoutUrl(prepayId);
+
+    return res.status(200).json({
+      success: true,
+      fabricToken,
+      prepayId,
+      checkoutUrl,
+      testOrderNumber,
+    });
+  } catch (error: any) {
+    console.error('Telebirr test-connection error on Render:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Telebirr connection test failed',
+      error: error.message || String(error),
+      stack: error.stack,
+    });
+  }
+}
