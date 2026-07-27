@@ -9,6 +9,7 @@ import addressRoutes from './routes/addressRoutes';
 import cartRoutes from './routes/cartRoutes';
 import orderRoutes from './routes/orderRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import telebirrRoutes from './routes/telebirrRoutes';
 
 const systemPort = process.env.PORT;
 dotenv.config();
@@ -51,6 +52,9 @@ app.use('/orders', orderRoutes);
 
 app.use('/api/notifications', notificationRoutes);
 app.use('/notifications', notificationRoutes);
+
+app.use('/api/payments/telebirr', telebirrRoutes);
+app.use('/payments/telebirr', telebirrRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });

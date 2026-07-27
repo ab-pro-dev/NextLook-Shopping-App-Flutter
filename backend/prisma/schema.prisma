@@ -165,6 +165,12 @@ model CartItem {
   @@index([cartId])
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
 enum OrderStatus {
   PENDING
   PROCESSING
@@ -180,6 +186,7 @@ model Order {
   user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   orderNumber          String               @unique
   status               OrderStatus          @default(PENDING)
+  paymentStatus        PaymentStatus        @default(PENDING)
   subtotal             Int
   shippingCost         Int
   tax                  Int
