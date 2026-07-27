@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { getStoredAdminUser, logoutAdmin } from '../services/api';
+import { getStoredAdminUser, logoutAdmin, checkServerHealth } from '../services/api';
 import {
   LayoutDashboard,
   Package,
@@ -15,6 +15,8 @@ import {
   Search,
   Bell,
   ShieldCheck,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 
 const navItems = [
@@ -32,6 +34,25 @@ const navItems = [
 export const AdminLayout: React.FC = () => {
   const adminUser = getStoredAdminUser();
   const location = useLocation();
+  const [isServerLive, setIsServerLive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const verifyHealth = async () => {
+      const live = await checkServerHealth();
+      if (isMounted) {
+        setIsServerLive(live);
+      }
+    };
+
+    verifyHealth();
+    const interval = setInterval(verifyHealth, 15000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-[#F5F6FA]">
@@ -105,8 +126,29 @@ export const AdminLayout: React.FC = () => {
             />
           </div>
 
-          {/* Admin Profile Header */}
+          {/* Admin Header Right Section */}
           <div className="flex items-center gap-5">
+            {/* Real Server Health Indicator Badge */}
+            <div className="hidden md:flex items-center gap-2">
+              {isServerLive === true && (
+                <span className="px-3 py-1 bg-emerald-50 text-[#22C55E] border border-emerald-200 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+                  <Wifi className="w-3.5 h-3.5" />
+                  Live Server Active
+                </span>
+              )}
+              {isServerLive === false && (
+                <span className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-xs animate-pulse">
+                  <WifiOff className="w-3.5 h-3.5" />
+                  Server Offline
+                </span>
+              )}
+              {isServerLive === null && (
+                <span className="px-3 py-1 bg-gray-100 text-gray-500 border border-gray-200 rounded-full text-xs font-semibold flex items-center gap-1.5">
+                  Checking Server...
+                </span>
+              )}
+            </div>
+
             <button className="relative p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all cursor-pointer">
               <Bell className="w-5 h-5" />
               <span className="w-2 h-2 bg-[#FF6584] rounded-full absolute top-2 right-2 ring-2 ring-white" />

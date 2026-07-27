@@ -36,6 +36,16 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
+export interface DashboardStatsResponse {
+  totalRevenue: number;
+  totalOrders: number;
+  activeProducts: number;
+  totalCategories: number;
+  totalCustomers: number;
+  revenueByMonth: Array<{ month: string; revenue: number }>;
+  salesByCategory: Array<{ category: string; unitsSold: number }>;
+}
+
 /**
  * Login admin user and enforce client-side ADMIN role requirement
  */
@@ -48,7 +58,6 @@ export async function loginAdmin(email: string, password: string): Promise<Admin
   const { user, accessToken, refreshToken } = response.data;
 
   // CRITICAL CLIENT-SIDE ROLE GUARD:
-  // Immediately reject regular customer accounts
   if (!user || user.role !== 'ADMIN') {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -85,4 +94,24 @@ export function isAuthenticatedAdmin(): boolean {
   const token = localStorage.getItem('accessToken');
   const user = getStoredAdminUser();
   return Boolean(token && user && user.role === 'ADMIN');
+}
+
+/**
+ * Fetch real dashboard stats from backend
+ */
+export async function fetchDashboardStats(): Promise<DashboardStatsResponse> {
+  const response = await api.get<DashboardStatsResponse>('/api/admin/dashboard-stats');
+  return response.data;
+}
+
+/**
+ * Check backend health status
+ */
+export async function checkServerHealth(): Promise<boolean> {
+  try {
+    const response = await api.get('/health', { timeout: 4000 });
+    return response.status === 200 && response.data?.status === 'ok';
+  } catch {
+    return false;
+  }
 }
