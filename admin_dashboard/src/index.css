@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Poppins', system-ui, -apple-system, sans-serif;
+  --color-brand-primary: #6C63FF;
+  --color-brand-accent: #FF6584;
+  --color-brand-dark: #1E1E2D;
+  --color-brand-bg: #F5F6FA;
+  --color-brand-card: #FFFFFF;
+  --color-brand-border: #E5E7EB;
+  --color-brand-success: #22C55E;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  background-color: #F5F6FA;
+  color: #1F2937;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
