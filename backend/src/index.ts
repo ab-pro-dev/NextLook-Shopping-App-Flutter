@@ -13,7 +13,8 @@ import notificationRoutes from './routes/notificationRoutes';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const host = '0.0.0.0';
 
 app.use(cors());
 app.use(express.json());
@@ -47,8 +48,8 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(port, () => {
-  console.log(`NextLook backend running on port ${port}`);
+app.listen(port, host, () => {
+  console.log(`NextLook backend running on http://${host}:${port}`);
 });
 
 export default app;
