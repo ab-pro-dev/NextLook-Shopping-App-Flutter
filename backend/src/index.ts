@@ -14,11 +14,18 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-const host = '0.0.0.0';
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.get('/', (_req, res) => {
+  res.json({ status: 'ok', service: 'NextLook Backend' });
+});
+
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);
@@ -48,8 +55,8 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(port, host, () => {
-  console.log(`NextLook backend running on http://${host}:${port}`);
+app.listen(port, () => {
+  console.log(`NextLook backend running on port ${port}`);
 });
 
 export default app;
