@@ -1,8 +1,6 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { AuthenticatedRequest } from '../middleware/auth';
-
-const prisma = new PrismaClient();
 
 /**
  * GET /api/notifications

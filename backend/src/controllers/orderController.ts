@@ -1,9 +1,7 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { prisma } from '../utils/prisma';
 import { AuthenticatedRequest } from '../middleware/auth';
-
-const prisma = new PrismaClient();
 
 const createOrderSchema = z.object({
   addressId: z.string().trim().min(1, 'addressId is required'),
