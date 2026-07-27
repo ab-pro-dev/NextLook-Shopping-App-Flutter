@@ -10,10 +10,11 @@ import cartRoutes from './routes/cartRoutes';
 import orderRoutes from './routes/orderRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 
+const systemPort = process.env.PORT;
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const port = systemPort ? parseInt(systemPort, 10) : (process.env.PORT ? parseInt(process.env.PORT, 10) : 3000);
 
 app.use(cors());
 app.use(express.json());
@@ -55,7 +56,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`NextLook backend running on port ${port}`);
 });
 
