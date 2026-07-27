@@ -9,6 +9,7 @@ import addressRoutes from './routes/addressRoutes';
 import cartRoutes from './routes/cartRoutes';
 import orderRoutes from './routes/orderRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 const systemPort = process.env.PORT;
 dotenv.config();
@@ -51,6 +52,9 @@ app.use('/orders', orderRoutes);
 
 app.use('/api/notifications', notificationRoutes);
 app.use('/notifications', notificationRoutes);
+
+app.use('/api/admin', adminRoutes);
+app.use('/admin', adminRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
