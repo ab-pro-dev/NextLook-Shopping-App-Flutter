@@ -189,6 +189,35 @@ export interface AdminOrderDetail extends AdminOrderListItem {
   allowedNextStatuses: OrderStatusType[];
 }
 
+export interface CustomerAddress {
+  id: string;
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city: string;
+  region: string;
+  country: string;
+  isDefault: boolean;
+}
+
+export interface AdminCustomerListItem {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string | null;
+  role: 'CUSTOMER';
+  createdAt: string;
+  totalOrdersCount: number;
+  totalSpent: number;
+  lastOrderDate: string | null;
+}
+
+export interface AdminCustomerDetail extends AdminCustomerListItem {
+  addresses: CustomerAddress[];
+  orders: AdminOrderDetail[];
+}
+
 /**
  * Login admin user and enforce client-side ADMIN role requirement
  */
@@ -336,5 +365,20 @@ export async function fetchAdminOrderById(id: string): Promise<AdminOrderDetail>
 
 export async function updateAdminOrderStatus(id: string, status: OrderStatusType): Promise<AdminOrderDetail> {
   const response = await api.put<AdminOrderDetail>(`/api/admin/orders/${id}/status`, { status });
+  return response.data;
+}
+
+/**
+ * Admin Customer API Services (Read-Only View)
+ */
+export async function fetchAdminCustomers(search?: string): Promise<AdminCustomerListItem[]> {
+  const params: any = {};
+  if (search && search.trim() !== '') params.search = search.trim();
+  const response = await api.get<AdminCustomerListItem[]>('/api/admin/customers', { params });
+  return response.data;
+}
+
+export async function fetchAdminCustomerById(id: string): Promise<AdminCustomerDetail> {
+  const response = await api.get<AdminCustomerDetail>(`/api/admin/customers/${id}`);
   return response.data;
 }

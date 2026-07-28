@@ -21,6 +21,10 @@ import {
   updateAdminCategory,
   deleteAdminCategory,
 } from '../controllers/adminCategoryController';
+import {
+  getAdminCustomers,
+  getAdminCustomerById,
+} from '../controllers/adminCustomerController';
 
 const router = Router();
 
@@ -51,5 +55,9 @@ router.get('/categories', getAdminCategories);
 router.post('/categories', createAdminCategory);
 router.put('/categories/:id', updateAdminCategory);
 router.delete('/categories/:id', deleteAdminCategory);
+
+// Admin Customer Management (Read-Only)
+router.get('/customers', getAdminCustomers);
+router.get('/customers/:id', getAdminCustomerById);
 
 export default router;

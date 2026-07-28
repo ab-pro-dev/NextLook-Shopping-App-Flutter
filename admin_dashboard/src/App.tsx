@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { CategoriesPage } from './pages/CategoriesPage';
+import { CustomersPage } from './pages/CustomersPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 export function App() {
@@ -22,7 +23,7 @@ export function App() {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/customers" element={<PlaceholderPage title="Customers" description="View registered customer accounts and order history." />} />
+            <Route path="/customers" element={<CustomersPage />} />
             <Route path="/coupons" element={<PlaceholderPage title="Coupons" description="Create and manage promotional discount codes." />} />
             <Route path="/reviews" element={<PlaceholderPage title="Reviews" description="Moderate customer product ratings and reviews." />} />
             <Route path="/reports" element={<PlaceholderPage title="Reports" description="Export sales reports and financial summaries." />} />
