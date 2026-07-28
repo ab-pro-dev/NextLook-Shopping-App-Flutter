@@ -60,20 +60,16 @@ class AuthError extends AuthState {
   String toString() => 'AuthError(message: "$message")';
 }
 
-/// StateNotifier controlling authentication flows.
+/// StateNotifier controlling Google authentication flows.
 class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
 
   AuthController(this._authRepository) : super(const AuthInitial());
 
-  Future<void> register(String name, String email, String password) async {
+  Future<void> signInWithGoogle() async {
     state = const AuthLoading();
     try {
-      final user = await _authRepository.register(
-        name: name,
-        email: email,
-        password: password,
-      );
+      final user = await _authRepository.signInWithGoogle();
       if (mounted) {
         state = AuthAuthenticated(user);
       }
@@ -83,28 +79,8 @@ class AuthController extends StateNotifier<AuthState> {
       }
     } catch (e) {
       if (mounted) {
-        state = AuthError(e.toString());
-      }
-    }
-  }
-
-  Future<void> login(String email, String password) async {
-    state = const AuthLoading();
-    try {
-      final user = await _authRepository.login(
-        email: email,
-        password: password,
-      );
-      if (mounted) {
-        state = AuthAuthenticated(user);
-      }
-    } on ApiException catch (e) {
-      if (mounted) {
-        state = AuthError(e.message);
-      }
-    } catch (e) {
-      if (mounted) {
-        state = AuthError(e.toString());
+        final msg = e.toString().replaceAll('Exception: ', '');
+        state = AuthError(msg);
       }
     }
   }

@@ -5,9 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell_scaffold.dart';
 import 'features/auth/application/auth_providers.dart';
-import 'features/auth/presentation/login_screen.dart';
+import 'features/auth/presentation/sign_in_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
-import 'features/auth/presentation/register_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/products/categories_screen.dart';
@@ -45,8 +44,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isAuth = authState is AuthAuthenticated;
       final isUnauth = authState is AuthUnauthenticated;
 
-      final isAuthRoute = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
+      final isAuthRoute = state.matchedLocation == '/sign-in';
 
       final isProtectedRoute = state.matchedLocation == '/home' ||
           state.matchedLocation == '/categories' ||
@@ -54,14 +52,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/cart' ||
           state.matchedLocation == '/profile';
 
-      // Redirect authenticated users away from login/register back to home
+      // Redirect authenticated users away from /sign-in back to home
       if (isAuth && isAuthRoute) {
         return '/home';
       }
 
-      // Redirect unauthenticated users trying to access protected shell routes to login
+      // Redirect unauthenticated users trying to access protected shell routes to /sign-in
       if (isUnauth && isProtectedRoute) {
-        return '/login';
+        return '/sign-in';
       }
 
       return null;
@@ -76,15 +74,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterScreen(),
+        path: '/sign-in',
+        builder: (context, state) => const SignInScreen(),
       ),
 
-      // Placeholder routes for Search, Category Products, and Product Detail
+      // Routes for Search, Category Products, and Product Detail
       GoRoute(
         path: '/search',
         builder: (context, state) {

@@ -31,7 +31,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _onSkipTap() {
-    context.go('/home');
+    context.go('/sign-in');
   }
 
   void _onNextTap() {
@@ -41,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOutCubic,
       );
     } else {
-      context.go('/home');
+      context.go('/sign-in');
     }
   }
 

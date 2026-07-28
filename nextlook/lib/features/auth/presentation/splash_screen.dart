@@ -54,8 +54,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           debugPrint('[SPLASH ROUTER] Routing to /onboarding (First Launch)');
           context.go('/onboarding');
         } else {
-          debugPrint('[SPLASH ROUTER] Routing to /login (Seen Onboarding)');
-          context.go('/login');
+          debugPrint('[SPLASH ROUTER] Routing to /sign-in (Seen Onboarding)');
+          context.go('/sign-in');
         }
         break;
     }

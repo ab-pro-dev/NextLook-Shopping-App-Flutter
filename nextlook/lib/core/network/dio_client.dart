@@ -55,8 +55,7 @@ class DioClient {
           return handler.next(options);
         },
         onError: (DioException err, handler) async {
-          final isAuthEndpoint = err.requestOptions.path.contains('/auth/register') ||
-              err.requestOptions.path.contains('/auth/login') ||
+          final isAuthEndpoint = err.requestOptions.path.contains('/auth/google') ||
               err.requestOptions.path.contains('/auth/refresh');
           final isRetry = err.requestOptions.extra['isRetry'] == true;
 

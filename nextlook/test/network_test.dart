@@ -63,9 +63,9 @@ void main() {
   group('ApiException Tests', () {
     test('extracts message from JSON backend response body', () {
       final dioError = DioException(
-        requestOptions: RequestOptions(path: '/api/auth/login'),
+        requestOptions: RequestOptions(path: '/api/auth/google'),
         response: Response(
-          requestOptions: RequestOptions(path: '/api/auth/login'),
+          requestOptions: RequestOptions(path: '/api/auth/google'),
           statusCode: 401,
           data: {'message': 'Invalid email or password'},
         ),
