@@ -22,6 +22,22 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Intercept 401 Unauthorized responses to auto-logout and redirect to /login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('adminUser');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export interface AdminUser {
   id: string;
   name: string;
