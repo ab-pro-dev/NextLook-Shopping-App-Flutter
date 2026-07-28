@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nextlook/features/address/data/address_model.dart';
 import 'package:nextlook/features/address/application/address_providers.dart';
 import 'package:nextlook/features/checkout/presentation/checkout_screen.dart';
+import 'package:nextlook/features/settings/data/store_settings.dart';
+import 'package:nextlook/features/settings/application/settings_providers.dart';
 
 void main() {
   group('Address Model Tests', () {
@@ -161,6 +163,18 @@ void main() {
             ),
             selectedCheckoutAddressProvider.overrideWith(
               () => FakeSelectedAddressNotifier(defaultAddr),
+            ),
+            storeSettingsProvider.overrideWith(
+              (ref) async => const StoreSettings(
+                id: 'settings-1',
+                standardDeliveryLabel: 'Standard Delivery',
+                standardDeliveryDays: '3-5 days',
+                standardDeliveryPrice: 150.0,
+                expressDeliveryLabel: 'Express Delivery',
+                expressDeliveryDays: '1-2 days',
+                expressDeliveryPrice: 350.0,
+                taxRatePercent: 0.0,
+              ),
             ),
           ],
           child: const MaterialApp(

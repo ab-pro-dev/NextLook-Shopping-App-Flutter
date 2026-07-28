@@ -7,20 +7,30 @@ class OrderRepository {
   OrderRepository(this._dioClient);
 
   /// Create a new order via POST /api/orders
+  /// Sends deliveryMethod identifier (e.g. 'standard' or 'express')
   Future<OrderDetail> createOrder({
     required String addressId,
-    required String deliveryMethodLabel,
-    required double deliveryMethodPrice,
+    required String deliveryMethod,
     required String paymentMethod,
+    String? deliveryMethodLabel,
+    double? deliveryMethodPrice,
   }) async {
+    final Map<String, dynamic> body = {
+      'addressId': addressId,
+      'deliveryMethod': deliveryMethod,
+      'paymentMethod': paymentMethod,
+    };
+
+    if (deliveryMethodLabel != null) {
+      body['deliveryMethodLabel'] = deliveryMethodLabel;
+    }
+    if (deliveryMethodPrice != null) {
+      body['deliveryMethodPrice'] = deliveryMethodPrice.round();
+    }
+
     final response = await _dioClient.post(
       '/api/orders',
-      data: {
-        'addressId': addressId,
-        'deliveryMethodLabel': deliveryMethodLabel,
-        'deliveryMethodPrice': deliveryMethodPrice.round(),
-        'paymentMethod': paymentMethod,
-      },
+      data: body,
     );
 
     final data = response.data as Map<String, dynamic>;

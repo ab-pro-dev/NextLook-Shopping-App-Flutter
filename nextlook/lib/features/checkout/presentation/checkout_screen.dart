@@ -4,13 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../address/application/address_providers.dart';
 import '../../address/presentation/address_form_bottom_sheet.dart';
 import '../../address/presentation/address_selection_bottom_sheet.dart';
 import '../../cart/application/cart_providers.dart';
 import '../../orders/application/order_providers.dart';
+import '../../settings/application/settings_providers.dart';
 import '../application/checkout_providers.dart';
 import '../data/delivery_method.dart';
 import '../data/payment_method.dart';
@@ -449,152 +449,215 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  /// STEP 1: Delivery Method Step Content
+  /// STEP 1: Delivery Method Step Content (Fetches real StoreSettings from backend)
   Widget _buildDeliveryStepContent(
     BuildContext context,
     WidgetRef ref,
     CheckoutState checkoutState,
     CheckoutSessionNotifier checkoutNotifier,
   ) {
-    final selectedMethod = checkoutState.selectedDeliveryMethod;
+    final settingsAsync = ref.watch(storeSettingsProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Delivery Method',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.dark,
-            ),
-          ),
-          const SizedBox(height: 14),
+    return settingsAsync.when(
+      data: (settings) {
+        final methods = settings.deliveryMethods;
+        final selectedMethod = checkoutState.selectedDeliveryMethod ?? methods.first;
 
-          ...DeliveryMethod.availableMethods.map((method) {
-            final isSelected = selectedMethod.id == method.id;
+        // Auto-initialize selected method if null or outdated
+        if (checkoutState.selectedDeliveryMethod == null ||
+            !methods.any((m) => m.id == checkoutState.selectedDeliveryMethod!.id)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            checkoutNotifier.setDeliveryMethod(methods.first);
+          });
+        }
 
-            return GestureDetector(
-              key: Key('delivery_option_${method.id}'),
-              onTap: () {
-                checkoutNotifier.setDeliveryMethod(method);
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary.withValues(alpha: 0.04)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey[200]!,
-                    width: isSelected ? 2 : 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          method.label,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.dark,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          method.estimatedDays,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          formatPrice(method.price),
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          isSelected
-                              ? Icons.radio_button_checked_rounded
-                              : Icons.radio_button_off_rounded,
-                          color: isSelected ? AppColors.primary : Colors.grey[400],
-                          size: 22,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-
-          const SizedBox(height: 28),
-
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              key: const Key('continue_to_payment_button'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: () {
-                checkoutNotifier.nextStep();
-              },
-              child: Text(
-                'Continue to Payment',
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Delivery Method',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.dark,
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
-          Center(
-            child: TextButton.icon(
-              onPressed: () => checkoutNotifier.previousStep(),
-              icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: Text(
-                'Back to Previous Step',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+              ...methods.map((method) {
+                final isSelected = selectedMethod.id == method.id;
+
+                return GestureDetector(
+                  key: Key('delivery_option_${method.id}'),
+                  onTap: () {
+                    checkoutNotifier.setDeliveryMethod(method);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.04)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : Colors.grey[200]!,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              method.label,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.dark,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              method.estimatedDays,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              formatPrice(method.price),
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Icon(
+                              isSelected
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              color: isSelected ? AppColors.primary : Colors.grey[400],
+                              size: 22,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+
+              const SizedBox(height: 28),
+
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  key: const Key('continue_to_payment_button'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  onPressed: () {
+                    checkoutNotifier.nextStep();
+                  },
+                  child: Text(
+                    'Continue to Payment',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 12),
+
+              Center(
+                child: TextButton.icon(
+                  onPressed: () => checkoutNotifier.previousStep(),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                  label: Text(
+                    'Back to Previous Step',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        );
+      },
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: AppColors.primary),
+              SizedBox(height: 16),
+              Text(
+                'Fetching live delivery rates...',
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      ),
+      error: (err, stack) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.signal_wifi_off_rounded, size: 48, color: AppColors.accent),
+              const SizedBox(height: 12),
+              Text(
+                'Unable to load delivery pricing',
+                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.dark),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Please check your connection and retry to fetch live delivery options.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                label: Text(
+                  'Retry',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                onPressed: () => ref.refresh(storeSettingsProvider),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -736,7 +799,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  /// STEP 3: Review Step Content
+  /// STEP 3: Review Step Content (Includes server tax percentage calculation)
   Widget _buildReviewStepContent(
     BuildContext context,
     WidgetRef ref,
@@ -744,16 +807,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     CheckoutSessionNotifier checkoutNotifier,
   ) {
     final cartAsync = ref.watch(cartProvider);
+    final settingsAsync = ref.watch(storeSettingsProvider);
     final selectedAddress = checkoutState.selectedAddress;
     final selectedDelivery = checkoutState.selectedDeliveryMethod;
     final selectedPayment = checkoutState.selectedPaymentMethod ?? 'Cash on Delivery';
 
     return cartAsync.when(
       data: (cart) {
-        const double taxPercentage = 0.0;
+        final storeSettings = settingsAsync.asData?.value;
+        final double taxPercentage = storeSettings?.taxRatePercent ?? 0.0;
+
         final double subtotal = cart.subtotal;
-        final double shipping = selectedDelivery.price;
-        final double tax = subtotal * taxPercentage;
+        final double shipping = selectedDelivery?.price ?? 0.0;
+        final double tax = (subtotal * (taxPercentage / 100)).roundToDouble();
         final double total = subtotal + shipping + tax;
 
         return SingleChildScrollView(
@@ -940,49 +1006,50 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          selectedDelivery.label,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.dark,
+              if (selectedDelivery != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            selectedDelivery.label,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.dark,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          selectedDelivery.estimatedDays,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                          const SizedBox(height: 2),
+                          Text(
+                            selectedDelivery.estimatedDays,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      formatPrice(selectedDelivery.price),
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        ],
                       ),
-                    ),
-                  ],
+                      Text(
+                        formatPrice(selectedDelivery.price),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
               const SizedBox(height: 20),
 
@@ -1057,7 +1124,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: 8),
                     _buildSummaryRow('Shipping', formatPrice(shipping)),
                     const SizedBox(height: 8),
-                    _buildSummaryRow('Tax', formatPrice(tax)),
+                    _buildSummaryRow(
+                      'Tax (${taxPercentage.toStringAsFixed(taxPercentage.truncateToDouble() == taxPercentage ? 0 : 1)}%)',
+                      formatPrice(tax),
+                    ),
                     const Divider(height: 20),
                     _buildSummaryRow(
                       'Total',
@@ -1126,10 +1196,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (_isPlacingOrder) return;
 
     final selectedAddress = checkoutState.selectedAddress;
+    final selectedDelivery = checkoutState.selectedDeliveryMethod;
+
     if (selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Shipping address is required.', style: GoogleFonts.poppins()),
+          backgroundColor: AppColors.dark,
+        ),
+      );
+      return;
+    }
+
+    if (selectedDelivery == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Delivery method is required.', style: GoogleFonts.poppins()),
           backgroundColor: AppColors.dark,
         ),
       );
@@ -1144,9 +1226,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final orderRepo = ref.read(orderRepositoryProvider);
       final createdOrder = await orderRepo.createOrder(
         addressId: selectedAddress.id,
-        deliveryMethodLabel: checkoutState.selectedDeliveryMethod.label,
-        deliveryMethodPrice: checkoutState.selectedDeliveryMethod.price,
+        deliveryMethod: selectedDelivery.id, // Sends 'standard' or 'express'
         paymentMethod: checkoutState.selectedPaymentMethod ?? 'Cash on Delivery',
+        deliveryMethodLabel: selectedDelivery.label,
+        deliveryMethodPrice: selectedDelivery.price,
       );
 
       // Reset checkout session state

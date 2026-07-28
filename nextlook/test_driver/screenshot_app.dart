@@ -65,9 +65,9 @@ class ScreenshotApp extends StatelessWidget {
       routes: {
         '/payment': (context) => ProviderScope(
               overrides: [
-                addressListNotifierProvider.overrideWith((ref) => FakeAddressListNotifier([sampleAddress])),
-                selectedCheckoutAddressProvider.overrideWith((ref) => FakeSelectedAddressNotifier(sampleAddress)),
-                cartProvider.overrideWith((ref) => FakeCartNotifier(sampleCartSummary)),
+                addressListNotifierProvider.overrideWith(() => FakeAddressListNotifier([sampleAddress])),
+                selectedCheckoutAddressProvider.overrideWith(() => FakeSelectedAddressNotifier(sampleAddress)),
+                cartProvider.overrideWith(() => FakeCartNotifier(sampleCartSummary)),
                 orderRepositoryProvider.overrideWithValue(FakeOrderRepository()),
               ],
               child: const PaymentContainerScreen(),
@@ -119,13 +119,14 @@ class FakeCartNotifier extends CartNotifier {
 
 class FakeOrderRepository implements OrderRepository {
   @override
-  Future<OrderModel> createOrder({
+  Future<OrderDetail> createOrder({
     required String addressId,
-    required String deliveryMethodLabel,
-    required double deliveryMethodPrice,
+    required String deliveryMethod,
     required String paymentMethod,
+    String? deliveryMethodLabel,
+    double? deliveryMethodPrice,
   }) async {
-    return OrderModel(
+    return OrderDetail(
       id: '1dfb26ec-4238-4712-8912-1ae0c3c26dbe',
       userId: 'b2a7f6e8-e78b-421c-ab52-4db71fc34db9',
       orderNumber: 'NLERP4F5',
@@ -134,7 +135,7 @@ class FakeOrderRepository implements OrderRepository {
       shippingCost: 350,
       tax: 0,
       total: 15350,
-      deliveryMethodLabel: deliveryMethodLabel,
+      deliveryMethodLabel: deliveryMethodLabel ?? 'Standard Delivery',
       shippingFullName: 'Abera Hagazi',
       shippingPhone: '+251914169551',
       shippingAddressLine1: 'Bole Road, House #402',
@@ -150,8 +151,11 @@ class FakeOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getOrders() async => [];
+  Future<List<OrderSummary>> getOrders() async => [];
 
   @override
-  Future<OrderModel> getOrderById(String orderId) async => throw UnimplementedError();
+  Future<OrderDetail> getOrderDetail(String orderId) async => throw UnimplementedError();
+
+  @override
+  Future<OrderDetail> getOrderById(String orderId) async => throw UnimplementedError();
 }

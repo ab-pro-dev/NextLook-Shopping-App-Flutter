@@ -5,18 +5,13 @@ import '../data/delivery_method.dart';
 
 class CheckoutState {
   final Address? selectedAddress;
-  final DeliveryMethod selectedDeliveryMethod;
+  final DeliveryMethod? selectedDeliveryMethod;
   final String? selectedPaymentMethod;
   final int currentStep;
 
   const CheckoutState({
     this.selectedAddress,
-    this.selectedDeliveryMethod = const DeliveryMethod(
-      id: 'standard',
-      label: 'Standard Delivery',
-      estimatedDays: '3-5 days',
-      price: 150.0,
-    ),
+    this.selectedDeliveryMethod,
     this.selectedPaymentMethod = 'Cash on Delivery',
     this.currentStep = 0,
   });
@@ -42,7 +37,7 @@ class CheckoutSessionNotifier extends Notifier<CheckoutState> {
     final address = ref.read(selectedCheckoutAddressProvider);
     return CheckoutState(
       selectedAddress: address,
-      selectedDeliveryMethod: DeliveryMethod.defaultMethod,
+      selectedDeliveryMethod: null,
       currentStep: 0,
     );
   }
@@ -81,7 +76,7 @@ class CheckoutSessionNotifier extends Notifier<CheckoutState> {
   void resetSession() {
     state = CheckoutState(
       selectedAddress: ref.read(selectedCheckoutAddressProvider),
-      selectedDeliveryMethod: DeliveryMethod.defaultMethod,
+      selectedDeliveryMethod: null,
       currentStep: 0,
     );
   }

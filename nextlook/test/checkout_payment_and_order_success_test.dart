@@ -140,13 +140,14 @@ class FakeCartNotifier extends CartNotifier {
 
 class FakeOrderRepository implements OrderRepository {
   @override
-  Future<OrderModel> createOrder({
+  Future<OrderDetail> createOrder({
     required String addressId,
-    required String deliveryMethodLabel,
-    required double deliveryMethodPrice,
+    required String deliveryMethod,
     required String paymentMethod,
+    String? deliveryMethodLabel,
+    double? deliveryMethodPrice,
   }) async {
-    return OrderModel(
+    return OrderDetail(
       id: 'test-order-id',
       userId: 'test-user-id',
       orderNumber: 'NL123456',
@@ -155,7 +156,7 @@ class FakeOrderRepository implements OrderRepository {
       shippingCost: 150,
       tax: 0,
       total: 4150,
-      deliveryMethodLabel: deliveryMethodLabel,
+      deliveryMethodLabel: deliveryMethodLabel ?? 'Standard Delivery',
       shippingFullName: 'Alex Johnson',
       shippingPhone: '+1 555 123 4567',
       shippingAddressLine1: '123 Main St',
