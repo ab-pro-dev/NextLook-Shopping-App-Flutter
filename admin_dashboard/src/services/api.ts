@@ -117,6 +117,62 @@ export interface ProductPayload {
   sizes: { label: string; stock: number }[];
 }
 
+export type OrderStatusType =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SHIPPED'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'CANCELLED';
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productThumbnailUrl: string;
+  colorName: string;
+  sizeLabel: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface OrderStatusHistoryItem {
+  id: string;
+  status: OrderStatusType;
+  createdAt: string;
+}
+
+export interface AdminOrderListItem {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  status: OrderStatusType;
+  paymentStatus: 'PENDING' | 'PAID' | 'FAILED';
+  paymentMethod: string;
+  total: number;
+  itemCount: number;
+  createdAt: string;
+}
+
+export interface AdminOrderDetail extends AdminOrderListItem {
+  subtotal: number;
+  shippingCost: number;
+  tax: number;
+  deliveryMethodLabel: string;
+  shippingFullName: string;
+  shippingPhone: string;
+  shippingAddressLine1: string;
+  shippingAddressLine2?: string | null;
+  shippingCity: string;
+  shippingRegion: string;
+  shippingCountry: string;
+  items: OrderItem[];
+  statusHistory: OrderStatusHistoryItem[];
+  allowedNextStatuses: OrderStatusType[];
+}
+
 /**
  * Login admin user and enforce client-side ADMIN role requirement
  */
@@ -221,5 +277,26 @@ export async function updateAdminProductStock(id: string, sizeLabel: string, sto
 
 export async function fetchCategories(): Promise<Category[]> {
   const response = await api.get<Category[]>('/api/categories');
+  return response.data;
+}
+
+/**
+ * Admin Order API Services
+ */
+export async function fetchAdminOrders(status?: string, search?: string): Promise<AdminOrderListItem[]> {
+  const params: any = {};
+  if (status && status !== 'ALL') params.status = status;
+  if (search && search.trim() !== '') params.search = search.trim();
+  const response = await api.get<AdminOrderListItem[]>('/api/admin/orders', { params });
+  return response.data;
+}
+
+export async function fetchAdminOrderById(id: string): Promise<AdminOrderDetail> {
+  const response = await api.get<AdminOrderDetail>(`/api/admin/orders/${id}`);
+  return response.data;
+}
+
+export async function updateAdminOrderStatus(id: string, status: OrderStatusType): Promise<AdminOrderDetail> {
+  const response = await api.put<AdminOrderDetail>(`/api/admin/orders/${id}/status`, { status });
   return response.data;
 }

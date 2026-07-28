@@ -4,6 +4,7 @@ import { AdminLayout } from './components/AdminLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProductsPage } from './pages/ProductsPage';
+import { OrdersPage } from './pages/OrdersPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 export function App() {
@@ -18,7 +19,7 @@ export function App() {
           <Route element={<AdminLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/products" element={<ProductsPage />} />
-            <Route path="/orders" element={<PlaceholderPage title="Orders" description="Track, filter, and update customer order statuses." />} />
+            <Route path="/orders" element={<OrdersPage />} />
             <Route path="/categories" element={<PlaceholderPage title="Categories" description="Manage apparel categories and icons." />} />
             <Route path="/customers" element={<PlaceholderPage title="Customers" description="View registered customer accounts and order history." />} />
             <Route path="/coupons" element={<PlaceholderPage title="Coupons" description="Create and manage promotional discount codes." />} />

@@ -10,6 +10,11 @@ import {
   deleteAdminProduct,
   updateAdminProductStock,
 } from '../controllers/adminProductController';
+import {
+  getAdminOrders,
+  getAdminOrderById,
+  updateAdminOrderStatus,
+} from '../controllers/adminOrderController';
 
 const router = Router();
 
@@ -29,5 +34,10 @@ router.post('/products', createAdminProduct);
 router.put('/products/:id', updateAdminProduct);
 router.delete('/products/:id', deleteAdminProduct);
 router.put('/products/:id/stock', updateAdminProductStock);
+
+// Admin Order Management
+router.get('/orders', getAdminOrders);
+router.get('/orders/:id', getAdminOrderById);
+router.put('/orders/:id/status', updateAdminOrderStatus);
 
 export default router;
