@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn src/index.ts",
     "build": "prisma generate && tsc",
-    "start": "npm run build && node dist/index.js"
+    "start": "prisma generate && prisma migrate deploy && tsc && node dist/index.js"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
