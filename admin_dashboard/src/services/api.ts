@@ -297,6 +297,28 @@ export async function fetchCategories(): Promise<Category[]> {
 }
 
 /**
+ * Admin Category API Services
+ */
+export async function fetchAdminCategories(): Promise<Category[]> {
+  const response = await api.get<Category[]>('/api/admin/categories');
+  return response.data;
+}
+
+export async function createAdminCategory(payload: { name: string; slug?: string; iconName?: string }): Promise<Category> {
+  const response = await api.post<Category>('/api/admin/categories', payload);
+  return response.data;
+}
+
+export async function updateAdminCategory(id: string, payload: { name?: string; slug?: string; iconName?: string }): Promise<Category> {
+  const response = await api.put<Category>(`/api/admin/categories/${id}`, payload);
+  return response.data;
+}
+
+export async function deleteAdminCategory(id: string): Promise<void> {
+  await api.delete(`/api/admin/categories/${id}`);
+}
+
+/**
  * Admin Order API Services
  */
 export async function fetchAdminOrders(status?: string, search?: string): Promise<AdminOrderListItem[]> {

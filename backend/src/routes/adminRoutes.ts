@@ -15,6 +15,12 @@ import {
   getAdminOrderById,
   updateAdminOrderStatus,
 } from '../controllers/adminOrderController';
+import {
+  getAdminCategories,
+  createAdminCategory,
+  updateAdminCategory,
+  deleteAdminCategory,
+} from '../controllers/adminCategoryController';
 
 const router = Router();
 
@@ -39,5 +45,11 @@ router.put('/products/:id/stock', updateAdminProductStock);
 router.get('/orders', getAdminOrders);
 router.get('/orders/:id', getAdminOrderById);
 router.put('/orders/:id/status', updateAdminOrderStatus);
+
+// Admin Category Management
+router.get('/categories', getAdminCategories);
+router.post('/categories', createAdminCategory);
+router.put('/categories/:id', updateAdminCategory);
+router.delete('/categories/:id', deleteAdminCategory);
 
 export default router;
