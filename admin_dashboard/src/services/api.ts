@@ -46,6 +46,77 @@ export interface DashboardStatsResponse {
   salesByCategory: Array<{ category: string; unitsSold: number }>;
 }
 
+export interface ProductImage {
+  id?: string;
+  url: string;
+  sortOrder: number;
+}
+
+export interface ProductColor {
+  id?: string;
+  name: string;
+  hexCode: string;
+}
+
+export interface ProductSize {
+  id?: string;
+  label: string;
+  stock: number;
+}
+
+export interface AdminProduct {
+  id: string;
+  name: string;
+  description: string;
+  brand: string;
+  categoryId: string;
+  categoryName: string;
+  categorySlug?: string;
+  price: number;
+  discountPrice: number | null;
+  stock: number;
+  sku: string;
+  weight?: number | null;
+  rating?: number;
+  reviewCount?: number;
+  thumbnailUrl: string;
+  isFlashSale: boolean;
+  isNewArrival: boolean;
+  isTrending: boolean;
+  isBestSeller: boolean;
+  images: ProductImage[];
+  colors: ProductColor[];
+  sizes: ProductSize[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  iconName: string;
+  productCount?: number;
+}
+
+export interface ProductPayload {
+  name: string;
+  description: string;
+  brand: string;
+  categoryId: string;
+  price: number;
+  discountPrice?: number | null;
+  sku: string;
+  weight?: number | null;
+  isFlashSale: boolean;
+  isNewArrival: boolean;
+  isTrending: boolean;
+  isBestSeller: boolean;
+  images: { url: string; sortOrder: number }[];
+  colors: { name: string; hexCode: string }[];
+  sizes: { label: string; stock: number }[];
+}
+
 /**
  * Login admin user and enforce client-side ADMIN role requirement
  */
@@ -114,4 +185,41 @@ export async function checkServerHealth(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Admin Product API Services
+ */
+export async function fetchAdminProducts(): Promise<AdminProduct[]> {
+  const response = await api.get<AdminProduct[]>('/api/admin/products');
+  return response.data;
+}
+
+export async function fetchAdminProductById(id: string): Promise<AdminProduct> {
+  const response = await api.get<AdminProduct>(`/api/admin/products/${id}`);
+  return response.data;
+}
+
+export async function createAdminProduct(payload: ProductPayload): Promise<AdminProduct> {
+  const response = await api.post<AdminProduct>('/api/admin/products', payload);
+  return response.data;
+}
+
+export async function updateAdminProduct(id: string, payload: ProductPayload): Promise<AdminProduct> {
+  const response = await api.put<AdminProduct>(`/api/admin/products/${id}`, payload);
+  return response.data;
+}
+
+export async function deleteAdminProduct(id: string): Promise<void> {
+  await api.delete(`/api/admin/products/${id}`);
+}
+
+export async function updateAdminProductStock(id: string, sizeLabel: string, stock: number): Promise<any> {
+  const response = await api.put(`/api/admin/products/${id}/stock`, { sizeLabel, stock });
+  return response.data;
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  const response = await api.get<Category[]>('/api/categories');
+  return response.data;
 }
