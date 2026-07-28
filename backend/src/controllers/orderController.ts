@@ -5,8 +5,9 @@ import { AuthenticatedRequest } from '../middleware/auth';
 
 const createOrderSchema = z.object({
   addressId: z.string().trim().min(1, 'addressId is required'),
-  deliveryMethodLabel: z.string().trim().min(1, 'deliveryMethodLabel is required'),
-  deliveryMethodPrice: z.coerce.number().int().min(0, 'deliveryMethodPrice must be a non-negative integer'),
+  deliveryMethod: z.string().trim().optional(),
+  deliveryMethodLabel: z.string().trim().optional(),
+  deliveryMethodPrice: z.coerce.number().int().optional(),
   paymentMethod: z.string().trim().min(1, 'paymentMethod is required'),
 });
 
@@ -36,7 +37,8 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
       return;
     }
 
-    const { addressId, deliveryMethodLabel, deliveryMethodPrice, paymentMethod } = parseResult.data;
+    const { addressId, paymentMethod } = parseResult.data;
+    const rawDeliveryMethod = (req.body.deliveryMethod || req.body.deliveryMethodLabel || '').toLowerCase().trim();
 
     // Wrap the entire order creation in a Prisma transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -71,7 +73,41 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
         return { status: 404, body: { message: 'Address not found or does not belong to user' } };
       }
 
-      // d. Stock verification for EACH cart item
+      // d. Server-side StoreSettings lookup & deliveryMethod validation
+      let settings = await tx.storeSettings.findFirst();
+      if (!settings) {
+        settings = await tx.storeSettings.create({
+          data: {
+            standardDeliveryLabel: 'Standard Delivery',
+            standardDeliveryDays: '3-5 days',
+            standardDeliveryPrice: 150,
+            expressDeliveryLabel: 'Express Delivery',
+            expressDeliveryDays: '1-2 days',
+            expressDeliveryPrice: 300,
+            taxRatePercent: 0,
+          },
+        });
+      }
+
+      let shippingCost = 0;
+      let deliveryMethodLabel = '';
+
+      if (rawDeliveryMethod === 'standard' || rawDeliveryMethod.includes('standard')) {
+        shippingCost = settings.standardDeliveryPrice;
+        deliveryMethodLabel = settings.standardDeliveryLabel;
+      } else if (rawDeliveryMethod === 'express' || rawDeliveryMethod.includes('express')) {
+        shippingCost = settings.expressDeliveryPrice;
+        deliveryMethodLabel = settings.expressDeliveryLabel;
+      } else {
+        return {
+          status: 400,
+          body: {
+            message: `Invalid deliveryMethod '${req.body.deliveryMethod || req.body.deliveryMethodLabel}'. Allowed values: 'standard', 'express'`,
+          },
+        };
+      }
+
+      // e. Stock verification for EACH cart item
       for (const item of cart.items) {
         const targetSize = item.product.sizes.find(
           (s) => s.label.toLowerCase() === item.sizeLabel.toLowerCase()
@@ -93,7 +129,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
         }
       }
 
-      // e. Deduct ordered quantity from ProductSize.stock for each line item
+      // f. Deduct ordered quantity from ProductSize.stock for each line item
       for (const item of cart.items) {
         const targetSize = item.product.sizes.find(
           (s) => s.label.toLowerCase() === item.sizeLabel.toLowerCase()
@@ -105,7 +141,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
         });
       }
 
-      // f. Calculate subtotal using current product prices
+      // g. Calculate subtotal using current product prices
       let subtotal = 0;
       const preparedItems = cart.items.map((item) => {
         const product = item.product;
@@ -130,8 +166,9 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
         };
       });
 
-      const shippingCost = deliveryMethodPrice;
-      const tax = 0; // Flat placeholder logic (0 tax)
+      // Server-side Tax calculation based on StoreSettings.taxRatePercent
+      const taxRate = settings.taxRatePercent || 0;
+      const tax = Math.round(subtotal * (taxRate / 100));
       const total = subtotal + shippingCost + tax;
 
       // Generate unique order number
@@ -146,8 +183,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
         }
       }
 
-      // g. Create Order row with snapshot fields
-      // NOTE: Payment integration is a later phase; storing paymentMethod string label for now.
+      // h. Create Order row with snapshot fields
       const order = await tx.order.create({
         data: {
           userId,
@@ -181,12 +217,12 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response): Pro
         },
       });
 
-      // h. Clear user's cart items
+      // i. Clear user's cart items
       await tx.cartItem.deleteMany({
         where: { cartId: cart.id },
       });
 
-      // i. Create auto-notification for order placement
+      // j. Create auto-notification for order placement
       await tx.notification.create({
         data: {
           userId,

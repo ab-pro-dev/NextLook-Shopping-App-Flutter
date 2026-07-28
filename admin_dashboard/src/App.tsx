@@ -7,6 +7,7 @@ import { ProductsPage } from './pages/ProductsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { CustomersPage } from './pages/CustomersPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 export function App() {
@@ -27,7 +28,7 @@ export function App() {
             <Route path="/coupons" element={<PlaceholderPage title="Coupons" description="Create and manage promotional discount codes." />} />
             <Route path="/reviews" element={<PlaceholderPage title="Reviews" description="Moderate customer product ratings and reviews." />} />
             <Route path="/reports" element={<PlaceholderPage title="Reports" description="Export sales reports and financial summaries." />} />
-            <Route path="/settings" element={<PlaceholderPage title="Settings" description="Configure store settings and admin preferences." />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
 

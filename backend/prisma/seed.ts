@@ -36,6 +36,25 @@ async function main() {
     console.log('Skipping Admin user seed: ADMIN_SEED_EMAIL or ADMIN_SEED_PASSWORD not set in env.');
   }
 
+  // 0b. Seed/Upsert StoreSettings singleton row
+  const firstSettings = await prisma.storeSettings.findFirst();
+  if (!firstSettings) {
+    await prisma.storeSettings.create({
+      data: {
+        standardDeliveryLabel: 'Standard Delivery',
+        standardDeliveryDays: '3-5 days',
+        standardDeliveryPrice: 150,
+        expressDeliveryLabel: 'Express Delivery',
+        expressDeliveryDays: '1-2 days',
+        expressDeliveryPrice: 300,
+        taxRatePercent: 0,
+      },
+    });
+    console.log('StoreSettings singleton row created with default values.');
+  } else {
+    console.log('StoreSettings singleton row already exists.');
+  }
+
   // Clean existing product & related transaction data safely
   await prisma.orderItem.deleteMany({});
   await prisma.orderStatusHistory.deleteMany({});

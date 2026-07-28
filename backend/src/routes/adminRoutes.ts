@@ -25,6 +25,7 @@ import {
   getAdminCustomers,
   getAdminCustomerById,
 } from '../controllers/adminCustomerController';
+import { updateAdminSettings } from '../controllers/settingsController';
 
 const router = Router();
 
@@ -59,5 +60,8 @@ router.delete('/categories/:id', deleteAdminCategory);
 // Admin Customer Management (Read-Only)
 router.get('/customers', getAdminCustomers);
 router.get('/customers/:id', getAdminCustomerById);
+
+// Admin Store Settings
+router.put('/settings', updateAdminSettings);
 
 export default router;

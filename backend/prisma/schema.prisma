@@ -13,14 +13,14 @@ enum Role {
 }
 
 model User {
-  id           String     @id @default(uuid())
+  id           String         @id @default(uuid())
   name         String
-  email        String     @unique
+  email        String         @unique
   passwordHash String
   avatarUrl    String?
-  role         Role       @default(CUSTOMER)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  role         Role           @default(CUSTOMER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   wishlists    Wishlist[]
   addresses    Address[]
   cart         Cart?
@@ -187,29 +187,29 @@ enum OrderStatus {
 }
 
 model Order {
-  id                   String               @id @default(uuid())
-  userId               String
-  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderNumber          String               @unique
-  status               OrderStatus          @default(PENDING)
-  paymentStatus        PaymentStatus        @default(PENDING)
-  subtotal             Int
-  shippingCost         Int
-  tax                  Int
-  total                Int
+  id                  String               @id @default(uuid())
+  userId              String
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderNumber         String               @unique
+  status              OrderStatus          @default(PENDING)
+  paymentStatus       PaymentStatus        @default(PENDING)
+  subtotal            Int
+  shippingCost        Int
+  tax                 Int
+  total               Int
   deliveryMethodLabel String
-  shippingFullName     String
-  shippingPhone        String
+  shippingFullName    String
+  shippingPhone       String
   shippingAddressLine1 String
   shippingAddressLine2 String?
-  shippingCity         String
-  shippingRegion       String
-  shippingCountry      String
-  paymentMethod        String
-  items                OrderItem[]
-  statusHistory        OrderStatusHistory[]
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  shippingCity        String
+  shippingRegion      String
+  shippingCountry     String
+  paymentMethod       String
+  items               OrderItem[]
+  statusHistory       OrderStatusHistory[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
   @@index([userId])
 }
@@ -241,4 +241,16 @@ model OrderStatusHistory {
   createdAt DateTime    @default(now())
 
   @@index([orderId])
+}
+
+model StoreSettings {
+  id                    String   @id @default(uuid())
+  standardDeliveryLabel String   @default("Standard Delivery")
+  standardDeliveryDays  String   @default("3-5 days")
+  standardDeliveryPrice Int      @default(150)
+  expressDeliveryLabel  String   @default("Express Delivery")
+  expressDeliveryDays   String   @default("1-2 days")
+  expressDeliveryPrice  Int      @default(300)
+  taxRatePercent        Float    @default(0)
+  updatedAt             DateTime @updatedAt
 }
