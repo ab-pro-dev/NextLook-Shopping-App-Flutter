@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   type AdminProduct,
   type Category,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 
 export const ProductsPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,36 @@ export const ProductsPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Sync selectedCategory with URL query param `category`
+  useEffect(() => {
+    const catParam = searchParams.get('category');
+    if (catParam && categories.length > 0) {
+      const found = categories.find(
+        (c) => c.slug.toLowerCase() === catParam.toLowerCase() || c.id === catParam
+      );
+      if (found) {
+        setSelectedCategory(found.id);
+      } else {
+        setSelectedCategory('ALL');
+      }
+    } else if (!catParam) {
+      setSelectedCategory('ALL');
+    }
+  }, [searchParams, categories]);
+
+  const handleCategorySelectChange = (newCatId: string) => {
+    setSelectedCategory(newCatId);
+    if (newCatId === 'ALL') {
+      searchParams.delete('category');
+    } else {
+      const foundCat = categories.find((c) => c.id === newCatId);
+      if (foundCat) {
+        searchParams.set('category', foundCat.slug);
+      }
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
 
   // Filtered Products
   const filteredProducts = products.filter((p) => {
@@ -199,7 +231,7 @@ export const ProductsPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => handleCategorySelectChange(e.target.value)}
             className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#6C63FF] cursor-pointer"
           >
             <option value="ALL">All Categories ({categories.length})</option>

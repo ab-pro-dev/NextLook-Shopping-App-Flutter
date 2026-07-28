@@ -220,12 +220,12 @@ export const CategoriesPage: React.FC = () => {
                       {category.iconName}
                     </td>
 
-                    {/* Product Count Cell (links to Products page) */}
+                    {/* Product Count Cell (links to Products page with slug query param) */}
                     <td className="py-4 px-4">
                       <button
-                        onClick={() => navigate(`/products`)}
+                        onClick={() => navigate(`/products?category=${category.slug}`)}
                         className="px-3 py-1 bg-gray-100 hover:bg-[#6C63FF]/10 hover:text-[#6C63FF] rounded-lg text-xs font-semibold text-gray-700 border border-gray-200 transition-all flex items-center gap-1.5 cursor-pointer"
-                        title="View products in this category"
+                        title={`View ${category.name} products`}
                       >
                         <span>{prodCount} products</span>
                         <ArrowRight className="w-3 h-3 text-gray-400" />
