@@ -47,26 +47,6 @@ export async function getPublicSettings(_req: Request, res: Response) {
   }
 }
 
-/**
- * GET /api/settings/db-schema-check
- * Temporary diagnostic endpoint returning direct information_schema query from database
- */
-export async function getDbSchemaCheck(_req: Request, res: Response) {
-  try {
-    const columns: any = await prisma.$queryRaw`
-      SELECT column_name, data_type, is_nullable
-      FROM information_schema.columns
-      WHERE table_name = 'User'
-      ORDER BY ordinal_position;
-    `;
-    return res.status(200).json({
-      environment: 'PRODUCTION_NEON_DATABASE',
-      columns,
-    });
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message });
-  }
-}
 
 /**
  * PUT /api/admin/settings
