@@ -15,7 +15,7 @@ class SignInScreen extends ConsumerWidget {
 
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
       if (next is AuthAuthenticated) {
-        context.go('/');
+        context.go('/home');
       }
     });
 
