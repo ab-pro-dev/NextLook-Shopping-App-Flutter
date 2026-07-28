@@ -14,9 +14,10 @@ enum Role {
 
 model User {
   id           String         @id @default(uuid())
+  googleId     String?        @unique
   name         String
   email        String         @unique
-  passwordHash String
+  passwordHash String?
   avatarUrl    String?
   role         Role           @default(CUSTOMER)
   createdAt    DateTime       @default(now())

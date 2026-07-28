@@ -1,81 +1,63 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { hashPassword, comparePassword } from '../utils/password';
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from '../utils/tokens';
-import { registerSchema, loginSchema, refreshTokenSchema } from '../utils/validation';
+import { refreshTokenSchema } from '../utils/validation';
 import { AuthenticatedRequest } from '../middleware/auth';
+import { verifyGoogleToken } from '../services/googleAuthService';
+import { Role } from '@prisma/client';
 
-export async function register(req: Request, res: Response) {
+/**
+ * POST /api/auth/google
+ * Body: { idToken }
+ * Authenticates or registers a user via Google ID Token.
+ */
+export async function googleAuth(req: Request, res: Response) {
   try {
-    const parseResult = registerSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return res.status(400).json({
-        message: 'Validation failed',
-        errors: parseResult.error.issues,
-      });
+    const { idToken } = req.body;
+
+    if (!idToken || typeof idToken !== 'string') {
+      return res.status(400).json({ message: 'idToken is required' });
     }
 
-    const { name, email, password } = parseResult.data;
-    const normalizedEmail = email.toLowerCase();
+    const googleUser = await verifyGoogleToken(idToken);
+    const normalizedEmail = googleUser.email.toLowerCase();
 
-    const existingUser = await prisma.user.findUnique({
+    // Check runtime ADMIN_EMAIL configuration
+    const adminEmail = (process.env.ADMIN_EMAIL || process.env.ADMIN_SEED_EMAIL || '').toLowerCase();
+    if (!adminEmail) {
+      console.warn('[GoogleAuth] WARNING: ADMIN_EMAIL environment variable is unset!');
+    }
+
+    let user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
 
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
+    if (user) {
+      // Existing user found by email -> Link account if googleId is null
+      if (!user.googleId || (googleUser.picture && !user.avatarUrl)) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            googleId: user.googleId ?? googleUser.googleId,
+            avatarUrl: user.avatarUrl ?? googleUser.picture,
+          },
+        });
+      }
+      // PRESERVE existing user.role!
+    } else {
+      // New user -> Determine role based on ADMIN_EMAIL match
+      const isAdminEmailMatch = adminEmail.length > 0 && normalizedEmail === adminEmail;
+      const role = isAdminEmailMatch ? Role.ADMIN : Role.CUSTOMER;
 
-    const passwordHash = await hashPassword(password);
-
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email: normalizedEmail,
-        passwordHash,
-      },
-    });
-
-    const accessToken = generateAccessToken(newUser.id);
-    const refreshToken = generateRefreshToken(newUser.id);
-
-    const { passwordHash: _, ...userWithoutPassword } = newUser;
-
-    return res.status(201).json({
-      user: userWithoutPassword,
-      accessToken,
-      refreshToken,
-    });
-  } catch (error) {
-    console.error('Error in register:', error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-}
-
-export async function login(req: Request, res: Response) {
-  try {
-    const parseResult = loginSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return res.status(400).json({
-        message: 'Validation failed',
-        errors: parseResult.error.issues,
+      user = await prisma.user.create({
+        data: {
+          googleId: googleUser.googleId,
+          email: normalizedEmail,
+          name: googleUser.name,
+          avatarUrl: googleUser.picture,
+          role,
+        },
       });
-    }
-
-    const { email, password } = parseResult.data;
-    const normalizedEmail = email.toLowerCase();
-
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-    });
-
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    const isPasswordValid = await comparePassword(password, user.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const accessToken = generateAccessToken(user.id);
@@ -88,12 +70,16 @@ export async function login(req: Request, res: Response) {
       accessToken,
       refreshToken,
     });
-  } catch (error) {
-    console.error('Error in login:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+  } catch (error: any) {
+    console.error('Error in googleAuth:', error.message || error);
+    return res.status(401).json({ message: error.message || 'Google authentication failed' });
   }
 }
 
+/**
+ * POST /api/auth/refresh
+ * Refresh access token using valid refresh token
+ */
 export async function refresh(req: Request, res: Response) {
   try {
     const parseResult = refreshTokenSchema.safeParse(req.body);
@@ -132,6 +118,10 @@ export async function refresh(req: Request, res: Response) {
   }
 }
 
+/**
+ * GET /api/auth/me
+ * Return current authenticated user profile
+ */
 export async function me(req: AuthenticatedRequest, res: Response) {
   try {
     let userId = req.userId;
