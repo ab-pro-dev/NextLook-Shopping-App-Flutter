@@ -78,6 +78,13 @@ class _AddressFormBottomSheetState extends ConsumerState<AddressFormBottomSheet>
       final notifier = ref.read(addressListNotifierProvider.notifier);
       late final Address savedAddress;
 
+      final regionText = _regionController.text.trim().isNotEmpty
+          ? _regionController.text.trim()
+          : 'Addis Ababa';
+      final countryText = _countryController.text.trim().isNotEmpty
+          ? _countryController.text.trim()
+          : 'Ethiopia';
+
       if (widget.addressToEdit != null) {
         savedAddress = await notifier.updateAddress(
           id: widget.addressToEdit!.id,
@@ -86,8 +93,8 @@ class _AddressFormBottomSheetState extends ConsumerState<AddressFormBottomSheet>
           addressLine1: _addressLine1Controller.text.trim(),
           addressLine2: _addressLine2Controller.text.trim(),
           city: _cityController.text.trim(),
-          region: _regionController.text.trim(),
-          country: _countryController.text.trim(),
+          region: regionText,
+          country: countryText,
           isDefault: _isDefault,
         );
       } else {
@@ -97,8 +104,8 @@ class _AddressFormBottomSheetState extends ConsumerState<AddressFormBottomSheet>
           addressLine1: _addressLine1Controller.text.trim(),
           addressLine2: _addressLine2Controller.text.trim(),
           city: _cityController.text.trim(),
-          region: _regionController.text.trim(),
-          country: _countryController.text.trim(),
+          region: regionText,
+          country: countryText,
           isDefault: _isDefault,
         );
       }
@@ -209,36 +216,12 @@ class _AddressFormBottomSheetState extends ConsumerState<AddressFormBottomSheet>
               ),
               const SizedBox(height: 12),
 
-              // City & Region (Side by side)
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _cityController,
-                      label: 'City',
-                      hint: 'New York',
-                      validator: (val) => val == null || val.trim().isEmpty ? 'City is required' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _regionController,
-                      label: 'State / Region',
-                      hint: 'NY',
-                      validator: (val) => val == null || val.trim().isEmpty ? 'State/region is required' : null,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Country
+              // City
               _buildTextField(
-                controller: _countryController,
-                label: 'Country',
-                hint: 'United States',
-                validator: (val) => val == null || val.trim().isEmpty ? 'Country is required' : null,
+                controller: _cityController,
+                label: 'City',
+                hint: 'Addis Ababa',
+                validator: (val) => val == null || val.trim().isEmpty ? 'City is required' : null,
               ),
               const SizedBox(height: 12),
 

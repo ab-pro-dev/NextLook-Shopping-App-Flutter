@@ -11,8 +11,8 @@ const addressSchema = z.object({
   addressLine1: z.string().trim().min(1, 'addressLine1 is required'),
   addressLine2: z.string().trim().optional().nullable(),
   city: z.string().trim().min(1, 'city is required'),
-  region: z.string().trim().min(1, 'region is required'),
-  country: z.string().trim().min(1, 'country is required'),
+  region: z.string().trim().optional().default('Addis Ababa'),
+  country: z.string().trim().optional().default('Ethiopia'),
   isDefault: z.boolean().optional().default(false),
 });
 
