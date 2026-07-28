@@ -73,9 +73,21 @@ export const SettingsPage: React.FC = () => {
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     setError(null);
     setSuccessMessage(null);
+
+    // Client-side validation
+    if (standardPrice < 0 || expressPrice < 0) {
+      setError('Delivery prices must be non-negative numbers');
+      return;
+    }
+
+    if (taxRatePercent < 0 || taxRatePercent > 100) {
+      setError('Tax rate percentage must be between 0 and 100');
+      return;
+    }
+
+    setSaving(true);
 
     try {
       const payload = {

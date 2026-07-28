@@ -28,7 +28,7 @@ const navItems = [
   { name: 'Coupons', path: '/coupons', icon: Tag, isBuilt: false },
   { name: 'Reviews', path: '/reviews', icon: Star, isBuilt: false },
   { name: 'Reports', path: '/reports', icon: BarChart3, isBuilt: false },
-  { name: 'Settings', path: '/settings', icon: Settings, isBuilt: false },
+  { name: 'Settings', path: '/settings', icon: Settings, isBuilt: true },
 ];
 
 export const AdminLayout: React.FC = () => {
