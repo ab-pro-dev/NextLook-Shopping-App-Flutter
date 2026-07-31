@@ -21,6 +21,7 @@ import 'features/orders/presentation/orders_list_screen.dart';
 import 'features/orders/presentation/order_tracking_screen.dart';
 import 'features/notifications/presentation/notifications_screen.dart';
 import 'features/address/presentation/addresses_screen.dart';
+import 'features/profile/presentation/edit_profile_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -148,16 +149,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // Profile Account Options routes
       GoRoute(
         path: '/profile/edit',
-        builder: (context, state) => Scaffold(
-          appBar: AppBar(title: Text('Edit Profile', style: GoogleFonts.poppins())),
-          body: Center(
-            child: Text(
-              'Edit Profile Screen\n(Coming soon)',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
-            ),
-          ),
-        ),
+        builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
         path: '/addresses',

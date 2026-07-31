@@ -14,3 +14,11 @@ export const loginSchema = z.object({
 export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, 'Refresh token is required'),
 });
+
+export const updateProfileSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Name cannot be empty')
+    .max(100, 'Name must be 100 characters or fewer'),
+});

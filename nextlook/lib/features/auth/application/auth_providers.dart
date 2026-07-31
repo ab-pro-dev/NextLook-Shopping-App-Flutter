@@ -99,6 +99,14 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  Future<User> updateProfile({required String name}) async {
+    final updatedUser = await _authRepository.updateProfile(name: name);
+    if (mounted) {
+      state = AuthAuthenticated(updatedUser);
+    }
+    return updatedUser;
+  }
+
   Future<void> checkAuthStatus() async {
     state = const AuthLoading();
     try {

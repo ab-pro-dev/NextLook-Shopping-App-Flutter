@@ -63,6 +63,16 @@ class AuthRepository {
     return User.fromJson(data['user'] as Map<String, dynamic>);
   }
 
+  /// Updates user profile (name) via PUT /api/auth/me
+  Future<User> updateProfile({required String name}) async {
+    final response = await _dioClient.put(
+      '/api/auth/me',
+      data: {'name': name},
+    );
+    final data = response.data as Map<String, dynamic>;
+    return User.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
   /// Logs out user by clearing stored tokens and Google Sign-In session.
   Future<void> logout() async {
     try {

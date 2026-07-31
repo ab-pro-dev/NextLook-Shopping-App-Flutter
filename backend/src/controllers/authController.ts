@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from '../utils/tokens';
-import { refreshTokenSchema } from '../utils/validation';
+import { refreshTokenSchema, updateProfileSchema } from '../utils/validation';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { verifyGoogleToken } from '../services/googleAuthService';
 import { Role } from '@prisma/client';
@@ -157,6 +157,44 @@ export async function me(req: AuthenticatedRequest, res: Response) {
     });
   } catch (error) {
     console.error('Error in me:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/**
+ * PUT /api/auth/me
+ * Update current authenticated user profile (name)
+ */
+export async function updateProfile(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const parseResult = updateProfileSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues.map((i) => i.message).join(', ');
+      return res.status(400).json({
+        message: errorMessage || 'Validation failed',
+        errors: parseResult.error.issues,
+      });
+    }
+
+    const { name } = parseResult.data;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { name },
+    });
+
+    const { passwordHash: _, ...userWithoutPassword } = updatedUser;
+
+    return res.status(200).json({
+      user: userWithoutPassword,
+    });
+  } catch (error: any) {
+    console.error('Error in updateProfile:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
