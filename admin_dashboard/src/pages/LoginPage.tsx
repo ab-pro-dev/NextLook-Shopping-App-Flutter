@@ -1,35 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginAdmin } from '../services/api';
-import { ShieldCheck, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
+import { loginAdminWithGoogle } from '../services/api';
+import { ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      setError('Failed to retrieve Google ID token.');
+      return;
+    }
+
     setError(null);
     setLoading(true);
 
     try {
-      await loginAdmin(email, password);
+      await loginAdminWithGoogle(credentialResponse.credential);
       navigate('/', { replace: true });
     } catch (err: any) {
-      console.error('Login error:', err);
+      console.error('Google Admin Login error:', err);
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.message) {
         setError(err.message);
       } else {
-        setError('Login failed. Please verify your credentials.');
+        setError('Google Sign-In failed. Admin access required.');
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google Sign-In was cancelled or failed to initialize.');
   };
 
   return (
@@ -44,8 +51,8 @@ export const LoginPage: React.FC = () => {
           <p className="text-gray-400 text-sm mt-1">Management Portal & Dashboard</p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+        {/* Login Body */}
+        <div className="p-8 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 text-sm">
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
@@ -53,55 +60,36 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="w-5 h-5 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@nextlook.com"
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white text-gray-900 text-sm transition-all"
-              />
-            </div>
-          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-6">
+              Sign in with your Google account to access the NextLook Admin Dashboard.
+            </p>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="w-5 h-5 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white text-gray-900 text-sm transition-all"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 px-4 bg-[#6C63FF] hover:bg-[#5a52e0] active:scale-[0.99] text-white font-semibold rounded-xl shadow-lg shadow-[#6C63FF]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-          >
             {loading ? (
-              <>
+              <div className="py-4 flex items-center justify-center gap-2 text-[#6C63FF] font-medium text-sm">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Authenticating...
-              </>
+                <span>Authenticating Admin credentials...</span>
+              </div>
             ) : (
-              'Log In to Dashboard'
+              <div className="flex justify-center w-full">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  size="large"
+                  shape="rectangular"
+                  text="continue_with"
+                  logo_alignment="center"
+                  width="336"
+                />
+              </div>
             )}
-          </button>
-        </form>
+          </div>
+
+          <div className="pt-2 border-t border-gray-100 text-center text-xs text-gray-400">
+            Admin access is restricted to verified administrator accounts only.
+          </div>
+        </div>
       </div>
     </div>
   );

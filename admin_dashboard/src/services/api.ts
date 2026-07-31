@@ -219,7 +219,33 @@ export interface AdminCustomerDetail extends AdminCustomerListItem {
 }
 
 /**
- * Login admin user and enforce client-side ADMIN role requirement
+ * Login admin user via Google ID Token and enforce client-side ADMIN role requirement
+ */
+export async function loginAdminWithGoogle(idToken: string): Promise<AdminUser> {
+  const response = await api.post<LoginResponse>('/api/auth/google', {
+    idToken,
+  });
+
+  const { user, accessToken, refreshToken } = response.data;
+
+  // CRITICAL CLIENT-SIDE ROLE GUARD:
+  if (!user || user.role !== 'ADMIN') {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('adminUser');
+    throw new Error('Admin access required. Customer accounts cannot access the admin dashboard.');
+  }
+
+  // Store auth tokens and user payload
+  localStorage.setItem('accessToken', accessToken);
+  localStorage.setItem('refreshToken', refreshToken);
+  localStorage.setItem('adminUser', JSON.stringify(user));
+
+  return user;
+}
+
+/**
+ * Login admin user and enforce client-side ADMIN role requirement (legacy)
  */
 export async function loginAdmin(email: string, password: string): Promise<AdminUser> {
   const response = await api.post<LoginResponse>('/api/auth/login', {
