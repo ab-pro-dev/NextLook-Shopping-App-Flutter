@@ -75,7 +75,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _completeOnboarding() async {
     await _onboardingPrefs.markOnboardingSeen();
     if (mounted) {
-      context.go('/login');
+      debugPrint('[ONBOARDING] Completed onboarding -> Routing to /home');
+      context.go('/home');
     }
   }
 

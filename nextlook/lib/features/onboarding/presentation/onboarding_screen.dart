@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/utils/onboarding_prefs.dart';
+
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -14,6 +16,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _showOnboardingFlow = false;
 
   final PageController _pageController = PageController();
+  final OnboardingPrefs _onboardingPrefs = OnboardingPrefs();
   int _currentPage = 0;
   bool _isGetStartedPressed = false;
   bool _isActionButtonPressed = false;
@@ -30,18 +33,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
   }
 
-  void _onSkipTap() {
-    context.go('/sign-in');
+  Future<void> _onSkipTap() async {
+    await _onboardingPrefs.markOnboardingSeen();
+    if (mounted) {
+      debugPrint('[ONBOARDING] Skipped onboarding -> Routing to /home');
+      context.go('/home');
+    }
   }
 
-  void _onNextTap() {
+  Future<void> _onNextTap() async {
     if (_currentPage < _onboardingImages.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOutCubic,
       );
     } else {
-      context.go('/sign-in');
+      await _onboardingPrefs.markOnboardingSeen();
+      if (mounted) {
+        debugPrint('[ONBOARDING] Completed onboarding -> Routing to /home');
+        context.go('/home');
+      }
     }
   }
 
@@ -128,6 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   bottom: bottomPadding > 0 ? 16 : 32,
                 ),
                 child: GestureDetector(
+                  key: const Key('onboarding_get_started_button'),
                   onTapDown: (_) => setState(() => _isGetStartedPressed = true),
                   onTapUp: (_) {
                     setState(() => _isGetStartedPressed = false);
@@ -248,6 +260,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
+                  key: const Key('onboarding_skip_button'),
                   onTap: _onSkipTap,
                   borderRadius: BorderRadius.circular(20),
                   child: Padding(
@@ -309,6 +322,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                   // Dark Pill Action Button ("Next" for Screens 1 & 2, "Finish" for Screen 3)
                   GestureDetector(
+                    key: const Key('onboarding_action_button'),
                     onTapDown: (_) => setState(() => _isActionButtonPressed = true),
                     onTapUp: (_) {
                       setState(() => _isActionButtonPressed = false);
