@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/sign_in_required_view.dart';
 import '../auth/application/auth_providers.dart';
+import '../auth/data/user_model.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -33,7 +34,7 @@ class ProfileScreen extends ConsumerWidget {
       backgroundColor: backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 14.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -48,13 +49,13 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
 
-              // User Info Card
+              // User Info Header Card
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: const Color(0xFFEEEEEE)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.03),
@@ -65,18 +66,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                      child: Text(
-                        user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
+                    _buildAvatar(user),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -107,7 +97,7 @@ class ProfileScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // Quick Actions List
+              // Account Options Header
               Text(
                 'Account Options',
                 style: GoogleFonts.poppins(
@@ -118,34 +108,61 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
 
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      key: const Key('profile_my_orders_tile'),
-                      leading: const Icon(Icons.local_shipping_outlined, color: AppColors.primary),
-                      title: Text('My Orders', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14)),
-                      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-                      onTap: () => context.push('/orders'),
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      key: const Key('profile_notifications_tile'),
-                      leading: const Icon(Icons.notifications_none_rounded, color: AppColors.primary),
-                      title: Text('Notifications', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14)),
-                      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-                      onTap: () => context.push('/notifications'),
-                    ),
-                  ],
+              // Options Card
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                clipBehavior: Clip.antiAlias,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildOptionRow(
+                        key: const Key('profile_edit_profile_tile'),
+                        icon: Icons.person_outline_rounded,
+                        label: 'Edit Profile',
+                        onTap: () => context.push('/profile/edit'),
+                      ),
+                      _buildOptionRow(
+                        key: const Key('profile_my_addresses_tile'),
+                        icon: Icons.location_on_outlined,
+                        label: 'My Addresses',
+                        onTap: () => context.push('/addresses'),
+                      ),
+                      _buildOptionRow(
+                        key: const Key('profile_my_orders_tile'),
+                        icon: Icons.local_shipping_outlined,
+                        label: 'My Orders',
+                        onTap: () => context.push('/orders'),
+                      ),
+                      _buildOptionRow(
+                        key: const Key('profile_wishlist_tile'),
+                        icon: Icons.favorite_outline_rounded,
+                        label: 'Wishlist',
+                        onTap: () => context.push('/wishlist'),
+                      ),
+                      _buildOptionRow(
+                        key: const Key('profile_notifications_tile'),
+                        icon: Icons.notifications_none_rounded,
+                        label: 'Notifications',
+                        onTap: () => context.push('/notifications'),
+                      ),
+                      _buildOptionRow(
+                        key: const Key('profile_settings_tile'),
+                        icon: Icons.settings_outlined,
+                        label: 'Settings',
+                        onTap: () => context.push('/settings-mobile'),
+                        isLast: true,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
               // Logout Button
               SizedBox(
@@ -174,10 +191,75 @@ class ProfileScreen extends ConsumerWidget {
                   },
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatar(User user) {
+    final hasAvatar = user.avatarUrl != null && user.avatarUrl!.trim().isNotEmpty;
+    if (hasAvatar) {
+      return CircleAvatar(
+        radius: 30,
+        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+        backgroundImage: NetworkImage(user.avatarUrl!),
+        onBackgroundImageError: (_, __) {},
+      );
+    }
+    return CircleAvatar(
+      radius: 30,
+      backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+      child: Text(
+        user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+        style: GoogleFonts.poppins(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionRow({
+    required Key key,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isLast = false,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          key: key,
+          leading: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 20),
+          ),
+          title: Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.dark,
+            ),
+          ),
+          trailing: const Icon(
+            Icons.chevron_right_rounded,
+            color: Colors.grey,
+            size: 22,
+          ),
+          onTap: onTap,
+        ),
+        if (!isLast) const Divider(height: 1, indent: 64, endIndent: 16, color: Color(0xFFEEEEEE)),
+      ],
     );
   }
 }

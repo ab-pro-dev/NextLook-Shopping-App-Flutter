@@ -121,15 +121,21 @@ class SignInRequiredView extends ConsumerWidget {
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildGoogleLogo(),
                           const SizedBox(width: 12),
-                          Text(
-                            'Continue with Google',
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1F1F1F),
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Continue with Google',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF1F1F1F),
+                                ),
+                              ),
                             ),
                           ),
                         ],
