@@ -6,6 +6,20 @@ import 'package:nextlook/features/cart/application/cart_providers.dart';
 import 'package:nextlook/features/cart/data/cart_models.dart';
 import 'package:nextlook/features/cart/presentation/cart_screen.dart';
 
+import 'package:nextlook/features/auth/application/auth_providers.dart';
+import 'package:nextlook/features/auth/data/user_model.dart';
+import 'package:nextlook/features/auth/data/auth_repository.dart';
+
+class FakeAuthController extends AuthController {
+  FakeAuthController(AuthState initialState) : super(FakeAuthRepository()) {
+    state = initialState;
+  }
+}
+
+class FakeAuthRepository extends AuthRepository {}
+
+const testUser = User(id: 'u1', email: 'test@example.com', name: 'Alex Johnson');
+
 class FakeCartNotifier extends CartNotifier {
   final CartSummary initialState;
 
@@ -39,6 +53,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
           cartProvider.overrideWith(
             () => FakeCartNotifier(CartSummary.empty()),
           ),
@@ -55,12 +70,13 @@ void main() {
     expect(find.byKey(const Key('browse_products_cart_button')), findsOneWidget);
   });
 
-  testWidgets('CartScreen displays cart item, quantity stepper, and totals', (tester) async {
+  testWidgets('CartScreen displays cart items and calculates totals', (tester) async {
     GoogleFonts.config.allowRuntimeFetching = false;
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
           cartProvider.overrideWith(
             () => FakeCartNotifier(
               const CartSummary(

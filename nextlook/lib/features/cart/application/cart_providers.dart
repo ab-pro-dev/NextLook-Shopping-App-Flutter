@@ -13,7 +13,13 @@ class CartNotifier extends AsyncNotifier<CartSummary> {
 
   @override
   Future<CartSummary> build() async {
+    final authState = ref.watch(authControllerProvider);
     _repository = ref.watch(cartRepositoryProvider);
+
+    if (authState is! AuthAuthenticated) {
+      return CartSummary.empty();
+    }
+
     return await _repository.getCart();
   }
 

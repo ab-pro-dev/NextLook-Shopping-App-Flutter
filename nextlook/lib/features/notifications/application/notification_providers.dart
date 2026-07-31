@@ -11,6 +11,10 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
 class NotificationsNotifier extends AsyncNotifier<List<AppNotification>> {
   @override
   Future<List<AppNotification>> build() async {
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) {
+      return [];
+    }
     final repository = ref.watch(notificationRepositoryProvider);
     return repository.getNotifications();
   }

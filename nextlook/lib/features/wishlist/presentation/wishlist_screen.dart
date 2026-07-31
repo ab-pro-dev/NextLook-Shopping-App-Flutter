@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../application/wishlist_providers.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/widgets/sign_in_required_view.dart';
+import '../../auth/application/auth_providers.dart';
 
 class WishlistScreen extends ConsumerWidget {
   const WishlistScreen({super.key});
@@ -16,6 +18,20 @@ class WishlistScreen extends ConsumerWidget {
     const darkNavy = Color(0xFF1E1E2D);
     const discountPink = Color(0xFFFF6584);
     const backgroundColor = Color(0xFFF8F9FC);
+
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) {
+      return Scaffold(
+        backgroundColor: backgroundColor,
+        body: const SafeArea(
+          child: SignInRequiredView(
+            title: 'Sign In Required',
+            message: 'Sign in to see your wishlist and saved items.',
+            icon: Icons.favorite_border_rounded,
+          ),
+        ),
+      );
+    }
 
     final wishlistAsync = ref.watch(wishlistNotifierProvider);
 

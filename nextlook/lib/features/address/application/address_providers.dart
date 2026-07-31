@@ -13,6 +13,10 @@ class AddressListNotifier extends AsyncNotifier<List<Address>> {
 
   @override
   Future<List<Address>> build() async {
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) {
+      return [];
+    }
     _repository = ref.watch(addressRepositoryProvider);
     final addresses = await _repository.getAddresses();
     return addresses;

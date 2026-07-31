@@ -5,6 +5,19 @@ import 'package:nextlook/features/notifications/presentation/notifications_scree
 import 'package:nextlook/features/notifications/application/notification_providers.dart';
 import 'package:nextlook/features/notifications/data/notification_model.dart';
 import 'package:nextlook/features/notifications/data/notification_repository.dart';
+import 'package:nextlook/features/auth/application/auth_providers.dart';
+import 'package:nextlook/features/auth/data/user_model.dart';
+import 'package:nextlook/features/auth/data/auth_repository.dart';
+
+class FakeAuthController extends AuthController {
+  FakeAuthController(AuthState initialState) : super(FakeAuthRepository()) {
+    state = initialState;
+  }
+}
+
+class FakeAuthRepository extends AuthRepository {}
+
+const testUser = User(id: 'u1', email: 'test@example.com', name: 'Alex Johnson');
 
 void main() {
   final sampleNotifications = [
@@ -33,6 +46,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             notificationsNotifierProvider.overrideWith(() => FakeNotificationsNotifier(sampleNotifications)),
           ],
           child: const MaterialApp(
@@ -55,6 +69,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             notificationsNotifierProvider.overrideWith(() => FakeNotificationsNotifier([])),
           ],
           child: const MaterialApp(
@@ -73,6 +88,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             notificationsNotifierProvider.overrideWith(() => FakeErrorNotificationsNotifier()),
           ],
           child: const MaterialApp(

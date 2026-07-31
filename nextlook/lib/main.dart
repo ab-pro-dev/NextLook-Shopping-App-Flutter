@@ -42,24 +42,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final authState = ref.read(authControllerProvider);
       final isAuth = authState is AuthAuthenticated;
-      final isUnauth = authState is AuthUnauthenticated;
-
       final isAuthRoute = state.matchedLocation == '/sign-in';
-
-      final isProtectedRoute = state.matchedLocation == '/home' ||
-          state.matchedLocation == '/categories' ||
-          state.matchedLocation == '/wishlist' ||
-          state.matchedLocation == '/cart' ||
-          state.matchedLocation == '/profile';
 
       // Redirect authenticated users away from /sign-in back to home
       if (isAuth && isAuthRoute) {
         return '/home';
-      }
-
-      // Redirect unauthenticated users trying to access protected shell routes to /sign-in
-      if (isUnauth && isProtectedRoute) {
-        return '/sign-in';
       }
 
       return null;

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/products/data/product_card_model.dart';
 import '../../features/wishlist/application/wishlist_providers.dart';
 import '../utils/currency_formatter.dart';
+import 'sign_in_required_view.dart';
 
 /// Reusable Product Card Widget matching NextLook design specs.
 class ProductCardWidget extends StatelessWidget {
@@ -155,18 +156,25 @@ class ProductCardWidget extends StatelessWidget {
                         return GestureDetector(
                           key: Key('product_card_heart_${product.id}'),
                           onTap: () async {
-                            try {
-                              await ref.read(wishlistNotifierProvider.notifier).toggleWishlist(product);
-                            } catch (_) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to update wishlist', style: GoogleFonts.poppins()),
-                                    backgroundColor: Colors.redAccent,
-                                  ),
-                                );
-                              }
-                            }
+                            await ensureAuthenticated(
+                              context,
+                              ref,
+                              message: 'Sign in to add items to your wishlist.',
+                              onAuthenticated: () async {
+                                try {
+                                  await ref.read(wishlistNotifierProvider.notifier).toggleWishlist(product);
+                                } catch (_) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to update wishlist', style: GoogleFonts.poppins()),
+                                        backgroundColor: Colors.redAccent,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.all(5),

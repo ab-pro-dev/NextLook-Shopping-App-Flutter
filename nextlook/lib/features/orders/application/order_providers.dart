@@ -10,6 +10,10 @@ final orderRepositoryProvider = Provider<OrderRepository>((ref) {
 
 /// FutureProvider that fetches the list of order summaries for current user
 final ordersListProvider = FutureProvider<List<OrderSummary>>((ref) async {
+  final authState = ref.watch(authControllerProvider);
+  if (authState is! AuthAuthenticated) {
+    return [];
+  }
   final repo = ref.watch(orderRepositoryProvider);
   return repo.getOrders();
 });

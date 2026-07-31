@@ -6,6 +6,20 @@ import 'package:nextlook/features/products/data/product_card_model.dart';
 import 'package:nextlook/features/wishlist/application/wishlist_providers.dart';
 import 'package:nextlook/features/wishlist/presentation/wishlist_screen.dart';
 
+import 'package:nextlook/features/auth/application/auth_providers.dart';
+import 'package:nextlook/features/auth/data/user_model.dart';
+import 'package:nextlook/features/auth/data/auth_repository.dart';
+
+class FakeAuthController extends AuthController {
+  FakeAuthController(AuthState initialState) : super(FakeAuthRepository()) {
+    state = initialState;
+  }
+}
+
+class FakeAuthRepository extends AuthRepository {}
+
+const testUser = User(id: 'u1', email: 'test@example.com', name: 'Alex Johnson');
+
 class FakeWishlistNotifier extends WishlistNotifier {
   final WishlistState initialState;
 
@@ -36,6 +50,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
           wishlistNotifierProvider.overrideWith(
             () => FakeWishlistNotifier(const WishlistState(items: [], wishlistedIds: {})),
           ),
@@ -58,6 +73,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
           wishlistNotifierProvider.overrideWith(
             () => FakeWishlistNotifier(const WishlistState(items: [fakeProduct], wishlistedIds: {'p1'})),
           ),

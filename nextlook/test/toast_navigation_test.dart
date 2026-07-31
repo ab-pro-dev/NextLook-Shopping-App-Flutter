@@ -8,6 +8,19 @@ import 'package:nextlook/features/cart/presentation/cart_screen.dart';
 import 'package:nextlook/features/products/application/product_providers.dart';
 import 'package:nextlook/features/products/data/product_detail_model.dart';
 import 'package:nextlook/features/products/presentation/product_detail_screen.dart';
+import 'package:nextlook/features/auth/application/auth_providers.dart';
+import 'package:nextlook/features/auth/data/user_model.dart';
+import 'package:nextlook/features/auth/data/auth_repository.dart';
+
+class FakeAuthController extends AuthController {
+  FakeAuthController(AuthState initialState) : super(FakeAuthRepository()) {
+    state = initialState;
+  }
+}
+
+class FakeAuthRepository extends AuthRepository {}
+
+const testUser = User(id: 'u1', email: 'test@example.com', name: 'Alex Johnson');
 
 class FakeCartNotifier extends CartNotifier {
   @override
@@ -53,6 +66,7 @@ void main() {
   Widget createTestWidget() {
     return ProviderScope(
       overrides: [
+        authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
         productDetailProvider('4c40a244-09d6-41ed-911c-1d0fdb0fb5e0')
             .overrideWith((ref) async => fakeDetail),
         cartProvider.overrideWith(() => FakeCartNotifier()),

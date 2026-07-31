@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/sign_in_required_view.dart';
+import '../../auth/application/auth_providers.dart';
 import '../application/notification_providers.dart';
 import '../data/notification_model.dart';
 
@@ -77,6 +79,41 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FC),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.dark, size: 20),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
+          title: Text(
+            'Notifications',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.dark,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: const SignInRequiredView(
+          title: 'Sign In Required',
+          message: 'Sign in to receive order updates and personal notifications.',
+          icon: Icons.notifications_none_rounded,
+        ),
+      );
+    }
+
     final notificationsAsync = ref.watch(notificationsNotifierProvider);
 
     return Scaffold(

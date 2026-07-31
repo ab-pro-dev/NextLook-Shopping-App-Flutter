@@ -6,6 +6,19 @@ import 'package:nextlook/features/address/application/address_providers.dart';
 import 'package:nextlook/features/checkout/presentation/checkout_screen.dart';
 import 'package:nextlook/features/settings/data/store_settings.dart';
 import 'package:nextlook/features/settings/application/settings_providers.dart';
+import 'package:nextlook/features/auth/application/auth_providers.dart';
+import 'package:nextlook/features/auth/data/user_model.dart';
+import 'package:nextlook/features/auth/data/auth_repository.dart';
+
+class FakeAuthController extends AuthController {
+  FakeAuthController(AuthState initialState) : super(FakeAuthRepository()) {
+    state = initialState;
+  }
+}
+
+class FakeAuthRepository extends AuthRepository {}
+
+const testUser = User(id: 'u1', email: 'test@example.com', name: 'Alex Johnson');
 
 void main() {
   group('Address Model Tests', () {
@@ -110,6 +123,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             addressListNotifierProvider.overrideWith(
               () => FakeAddressListNotifier([defaultAddr]),
             ),
@@ -158,6 +172,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             addressListNotifierProvider.overrideWith(
               () => FakeAddressListNotifier([defaultAddr]),
             ),
@@ -199,6 +214,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             addressListNotifierProvider.overrideWith(
               () => FakeAddressListNotifier([]),
             ),

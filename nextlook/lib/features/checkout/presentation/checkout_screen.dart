@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/widgets/sign_in_required_view.dart';
+import '../../auth/application/auth_providers.dart';
 import '../../address/application/address_providers.dart';
 import '../../address/presentation/address_form_bottom_sheet.dart';
 import '../../address/presentation/address_selection_bottom_sheet.dart';
@@ -37,6 +39,35 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FC),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.dark, size: 20),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(
+            'Checkout',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.dark,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: const SignInRequiredView(
+          title: 'Sign In Required',
+          message: 'Please sign in to proceed with your checkout.',
+          icon: Icons.shopping_cart_checkout_rounded,
+        ),
+      );
+    }
+
     final checkoutState = ref.watch(checkoutSessionProvider);
     final checkoutNotifier = ref.read(checkoutSessionProvider.notifier);
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../auth/application/auth_providers.dart';
 import '../../products/data/product_card_model.dart';
 import '../data/wishlist_repository.dart';
 
@@ -31,6 +32,11 @@ final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
 class WishlistNotifier extends AsyncNotifier<WishlistState> {
   @override
   Future<WishlistState> build() async {
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) {
+      return const WishlistState(items: [], wishlistedIds: {});
+    }
+
     final repository = ref.read(wishlistRepositoryProvider);
     final items = await repository.getWishlist();
     final ids = items.map((p) => p.id).toSet();

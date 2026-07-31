@@ -34,30 +34,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     await Future.delayed(widget.initialDelay);
     if (!mounted) return;
 
-    await ref.read(authControllerProvider.notifier).checkAuthStatus();
-    if (!mounted) return;
-
-    final authState = ref.read(authControllerProvider);
     final hasSeenOnboarding = await _onboardingPrefs.hasSeenOnboarding();
 
+    // Silently attempt to restore session if tokens exist
+    try {
+      await ref.read(authControllerProvider.notifier).checkAuthStatus();
+    } catch (_) {}
+
     if (!mounted) return;
 
-    switch (authState) {
-      case AuthAuthenticated():
-        debugPrint('[SPLASH ROUTER] Routing to /home (AuthAuthenticated)');
-        context.go('/home');
-        break;
-      case AuthUnauthenticated():
-      case AuthError():
-      default:
-        if (!hasSeenOnboarding) {
-          debugPrint('[SPLASH ROUTER] Routing to /onboarding (First Launch)');
-          context.go('/onboarding');
-        } else {
-          debugPrint('[SPLASH ROUTER] Routing to /sign-in (Seen Onboarding)');
-          context.go('/sign-in');
-        }
-        break;
+    if (!hasSeenOnboarding) {
+      debugPrint('[SPLASH ROUTER] Routing to /onboarding (First Launch)');
+      context.go('/onboarding');
+    } else {
+      debugPrint('[SPLASH ROUTER] Routing to /home (Guest / Authenticated browsing)');
+      context.go('/home');
     }
   }
 

@@ -5,6 +5,20 @@ import 'package:nextlook/features/orders/presentation/order_tracking_screen.dart
 import 'package:nextlook/features/orders/application/order_providers.dart';
 import 'package:nextlook/features/orders/data/order_model.dart';
 
+import 'package:nextlook/features/auth/application/auth_providers.dart';
+import 'package:nextlook/features/auth/data/user_model.dart';
+import 'package:nextlook/features/auth/data/auth_repository.dart';
+
+class FakeAuthController extends AuthController {
+  FakeAuthController(AuthState initialState) : super(FakeAuthRepository()) {
+    state = initialState;
+  }
+}
+
+class FakeAuthRepository extends AuthRepository {}
+
+const testUser = User(id: 'u1', email: 'test@example.com', name: 'Alex Johnson');
+
 void main() {
   final sampleDetail = OrderDetail(
     id: 'order-1',
@@ -54,6 +68,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             orderDetailProvider('order-1').overrideWith((ref) async => sampleDetail),
           ],
           child: const MaterialApp(
@@ -83,6 +98,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
             orderDetailProvider('fake-id').overrideWith((ref) async => throw Exception('Order not found')),
           ],
           child: const MaterialApp(

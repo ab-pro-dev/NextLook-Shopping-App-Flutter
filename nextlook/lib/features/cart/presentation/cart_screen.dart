@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/widgets/sign_in_required_view.dart';
+import '../../auth/application/auth_providers.dart';
 import '../application/cart_providers.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -17,6 +19,20 @@ class CartScreen extends ConsumerWidget {
     const darkNavy = Color(0xFF1E1E2D);
     const backgroundColor = Color(0xFFF8F9FC);
     const discountPink = Color(0xFFFF6584);
+
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) {
+      return Scaffold(
+        backgroundColor: backgroundColor,
+        body: const SafeArea(
+          child: SignInRequiredView(
+            title: 'Sign In Required',
+            message: 'Sign in to see your cart and complete checkout.',
+            icon: Icons.shopping_bag_outlined,
+          ),
+        ),
+      );
+    }
 
     final cartAsync = ref.watch(cartProvider);
 

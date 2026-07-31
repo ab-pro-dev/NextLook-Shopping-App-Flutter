@@ -13,6 +13,19 @@ import 'package:nextlook/features/orders/data/order_repository.dart';
 import 'package:nextlook/features/orders/data/order_model.dart';
 import 'package:nextlook/features/settings/data/store_settings.dart';
 import 'package:nextlook/features/settings/application/settings_providers.dart';
+import 'package:nextlook/features/auth/application/auth_providers.dart';
+import 'package:nextlook/features/auth/data/user_model.dart';
+import 'package:nextlook/features/auth/data/auth_repository.dart';
+
+class FakeAuthController extends AuthController {
+  FakeAuthController(AuthState initialState) : super(FakeAuthRepository()) {
+    state = initialState;
+  }
+}
+
+class FakeAuthRepository extends AuthRepository {}
+
+const testUser = User(id: 'u1', email: 'test@example.com', name: 'Alex Johnson');
 
 void main() {
   const mockSettings = StoreSettings(
@@ -104,6 +117,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          authControllerProvider.overrideWith((ref) => FakeAuthController(const AuthAuthenticated(testUser))),
           addressListNotifierProvider.overrideWith(() => FakeAddressListNotifier([sampleAddress])),
           selectedCheckoutAddressProvider.overrideWith(() => FakeSelectedAddressNotifier(sampleAddress)),
           cartProvider.overrideWith(() => FakeCartNotifier()),
