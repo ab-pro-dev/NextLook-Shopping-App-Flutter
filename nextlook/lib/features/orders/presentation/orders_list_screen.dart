@@ -8,6 +8,7 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/sign_in_required_view.dart';
 import '../../auth/application/auth_providers.dart';
 import '../application/order_providers.dart';
+import 'widgets/order_skeletons.dart';
 import '../data/order_model.dart';
 
 class OrdersListScreen extends ConsumerStatefulWidget {
@@ -403,9 +404,7 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                   ),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
+              loading: () => const OrdersListSkeleton(itemCount: 3),
               error: (err, stack) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/sign_in_required_view.dart';
+import '../../../core/widgets/skeleton/address_card_skeleton.dart';
 import '../application/address_providers.dart';
 import '../data/address_model.dart';
 import 'address_form_bottom_sheet.dart';
@@ -47,9 +49,7 @@ class AddressesScreen extends ConsumerWidget {
           }
           return _buildAddressList(context, ref, addresses);
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () => const AddressListSkeleton(itemCount: 3),
         error: (err, stack) => _buildErrorState(ref, err.toString()),
       ),
       bottomNavigationBar: addressesAsync.maybeWhen(

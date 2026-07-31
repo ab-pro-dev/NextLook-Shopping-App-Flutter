@@ -13,6 +13,7 @@ import '../../wishlist/application/wishlist_providers.dart';
 import '../application/product_providers.dart';
 import '../data/product_card_model.dart';
 import '../data/product_detail_model.dart';
+import 'widgets/product_detail_skeleton.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -643,11 +644,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ],
           );
         },
-        loading: () => const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(strokeWidth: 2, color: primaryPurple),
-          ),
-        ),
+        loading: () => const ProductDetailSkeleton(),
         error: (err, stack) => Scaffold(
           body: Center(
             child: Padding(

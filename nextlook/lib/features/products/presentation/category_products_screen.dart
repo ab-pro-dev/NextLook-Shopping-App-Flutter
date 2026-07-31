@@ -6,6 +6,7 @@ import '../../../core/widgets/product_card.dart';
 import '../application/product_providers.dart';
 import '../data/product_query_params.dart';
 import 'filters_screen.dart';
+import 'widgets/product_grid_skeleton.dart';
 
 class CategoryProductsScreen extends ConsumerStatefulWidget {
   final String categorySlug;
@@ -303,12 +304,10 @@ class _CategoryProductsScreenState extends ConsumerState<CategoryProductsScreen>
                             ),
                             if (state.isLoadingMore)
                               const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 20.0),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: primaryPurple,
-                                  ),
+                                padding: EdgeInsets.only(top: 16.0),
+                                child: ProductGridSkeleton(
+                                  itemCount: 2,
+                                  padding: EdgeInsets.zero,
                                 ),
                               ),
                           ],
@@ -318,12 +317,7 @@ class _CategoryProductsScreenState extends ConsumerState<CategoryProductsScreen>
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: primaryPurple,
-          ),
-        ),
+        loading: () => const ProductGridSkeleton(itemCount: 6),
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

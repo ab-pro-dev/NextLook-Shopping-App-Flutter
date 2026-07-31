@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/sign_in_required_view.dart';
+import 'widgets/order_skeletons.dart';
 import '../../auth/application/auth_providers.dart';
 import '../application/order_providers.dart';
 import '../data/order_model.dart';
@@ -549,9 +550,7 @@ class OrderTrackingScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () => const OrderTrackingSkeleton(),
         error: (err, stack) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

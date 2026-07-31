@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/sign_in_required_view.dart';
+import 'widgets/notification_skeletons.dart';
 import '../../auth/application/auth_providers.dart';
 import '../application/notification_providers.dart';
 import '../data/notification_model.dart';
@@ -324,9 +325,7 @@ class NotificationsScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () => const NotificationsListSkeleton(itemCount: 5),
         error: (err, stack) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/sign_in_required_view.dart';
+import '../../../core/widgets/skeleton/product_list_row_skeleton.dart';
 import '../../auth/application/auth_providers.dart';
 import '../application/cart_providers.dart';
 
@@ -503,9 +504,7 @@ class CartScreen extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2, color: primaryPurple),
-                ),
+                loading: () => const ProductListRowsSkeleton(itemCount: 3),
                 error: (err, stack) => Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),

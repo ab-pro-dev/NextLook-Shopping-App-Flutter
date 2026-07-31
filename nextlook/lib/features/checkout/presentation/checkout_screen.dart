@@ -6,6 +6,8 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/sign_in_required_view.dart';
+import '../../../core/widgets/skeleton/address_card_skeleton.dart';
+import '../../../core/widgets/skeleton/product_list_row_skeleton.dart';
 import '../../auth/application/auth_providers.dart';
 import '../../address/application/address_providers.dart';
 import '../../address/presentation/address_form_bottom_sheet.dart';
@@ -449,9 +451,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      ),
+      loading: () => const AddressListSkeleton(itemCount: 2),
       error: (err, stack) => Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1211,7 +1211,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      loading: () => const ProductListRowsSkeleton(itemCount: 2),
       error: (err, stack) => Center(
         child: Text('Failed to load cart summary: $err', style: GoogleFonts.poppins(color: AppColors.accent)),
       ),

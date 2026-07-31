@@ -8,6 +8,7 @@ import '../../products/application/product_providers.dart';
 import '../../products/data/category_model.dart';
 import '../../products/data/product_card_model.dart';
 import '../../notifications/application/notification_providers.dart';
+import 'widgets/home_skeletons.dart';
 
 /// Real Home Screen for NextLook matching the exact UI spec from The_App_UI.png
 class HomeScreen extends ConsumerStatefulWidget {
@@ -263,12 +264,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 14),
               categoriesAsync.when(
                 data: (categories) => _buildCategoriesRow(_sortCategories(categories)),
-                loading: () => const SizedBox(
-                  height: 90,
-                  child: Center(
-                    child: CircularProgressIndicator(strokeWidth: 2, color: primaryPurple),
-                  ),
-                ),
+                loading: () => const CategoriesRowSkeleton(),
                 error: (err, stack) => _buildInlineError(
                   message: 'Failed to load categories',
                   onRetry: () => ref.invalidate(categoriesProvider),
@@ -336,18 +332,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     _buildHorizontalProductList('best_sellers_list', sections.bestSellers),
                   ],
                 ),
-                loading: () => Column(
-                  children: List.generate(
-                    3,
-                    (index) => Container(
-                      height: 220,
-                      margin: const EdgeInsets.only(bottom: 20),
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2, color: primaryPurple),
-                      ),
-                    ),
-                  ),
-                ),
+                loading: () => const HomeSectionsSkeleton(),
                 error: (err, stack) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: _buildInlineError(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../application/product_providers.dart';
 import '../data/category_model.dart';
+import 'widgets/category_skeletons.dart';
 
 /// Categories List Screen matching The_App_UI.png reference spec
 class CategoriesListScreen extends ConsumerWidget {
@@ -184,12 +185,7 @@ class CategoriesListScreen extends ConsumerWidget {
                     },
                   );
                 },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: primaryPurple,
-                  ),
-                ),
+                loading: () => const CategoriesListSkeleton(),
                 error: (err, stack) => Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
