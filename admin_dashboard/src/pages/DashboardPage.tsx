@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchDashboardStats, type DashboardStatsResponse } from '../services/api';
 import {
   DollarSign,
@@ -235,8 +236,8 @@ export const DashboardPage: React.FC = () => {
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
         <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Management Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <a
-            href="/products"
+          <Link
+            to="/products"
             className="p-4 bg-gray-50 hover:bg-[#6C63FF]/5 border border-gray-200 rounded-xl flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-3">
@@ -244,10 +245,10 @@ export const DashboardPage: React.FC = () => {
               <span className="font-semibold text-sm text-gray-800">Manage Products</span>
             </div>
             <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-[#6C63FF] transition-all" />
-          </a>
+          </Link>
 
-          <a
-            href="/orders"
+          <Link
+            to="/orders"
             className="p-4 bg-gray-50 hover:bg-blue-50 border border-gray-200 rounded-xl flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-3">
@@ -255,10 +256,10 @@ export const DashboardPage: React.FC = () => {
               <span className="font-semibold text-sm text-gray-800">View Orders</span>
             </div>
             <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-all" />
-          </a>
+          </Link>
 
-          <a
-            href="/categories"
+          <Link
+            to="/categories"
             className="p-4 bg-gray-50 hover:bg-purple-50 border border-gray-200 rounded-xl flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-3">
@@ -266,10 +267,10 @@ export const DashboardPage: React.FC = () => {
               <span className="font-semibold text-sm text-gray-800">Categories</span>
             </div>
             <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 transition-all" />
-          </a>
+          </Link>
 
-          <a
-            href="/customers"
+          <Link
+            to="/customers"
             className="p-4 bg-gray-50 hover:bg-emerald-50 border border-gray-200 rounded-xl flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-3">
@@ -277,7 +278,7 @@ export const DashboardPage: React.FC = () => {
               <span className="font-semibold text-sm text-gray-800">Customers</span>
             </div>
             <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-[#22C55E] transition-all" />
-          </a>
+          </Link>
         </div>
       </div>
     </div>
