@@ -394,32 +394,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           borderRadius: BorderRadius.circular(22),
           child: Stack(
             children: [
-              // Background network photo image with dark gradient overlay
+              // Background network photo image
               Positioned.fill(
-                child: ShaderMask(
-                  shaderCallback: (rect) {
-                    return const LinearGradient(
+                child: CachedNetworkImage(
+                  imageUrl: banner.imageUrl,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  placeholder: (context, url) => Container(color: const Color(0xFF1E1E2D)),
+                  errorWidget: (context, url, error) => Container(
+                    color: const Color(0xFF1E1E2D),
+                    child: const Center(
+                      child: Icon(Icons.image_not_supported_outlined, color: Colors.white30, size: 36),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Soft left-to-right gradient overlay for optimal text readability while keeping the image vibrant
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        Color(0xFF0F1219),
-                        Color(0xEE161A23),
-                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.65),
+                        Colors.black.withValues(alpha: 0.25),
+                        Colors.black.withValues(alpha: 0.0),
                       ],
-                      stops: [0.0, 0.55, 1.0],
-                    ).createShader(rect);
-                  },
-                  blendMode: BlendMode.srcOver,
-                  child: CachedNetworkImage(
-                    imageUrl: banner.imageUrl,
-                    fit: BoxFit.cover,
-                    alignment: const Alignment(0.6, -0.3),
-                    placeholder: (context, url) => Container(color: const Color(0xFF161A23)),
-                    errorWidget: (context, url, error) => Container(
-                      color: const Color(0xFF161A23),
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported_outlined, color: Colors.white30, size: 36),
-                      ),
+                      stops: const [0.0, 0.55, 1.0],
                     ),
                   ),
                 ),
