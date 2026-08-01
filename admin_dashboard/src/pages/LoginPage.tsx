@@ -68,11 +68,11 @@ export const LoginPage: React.FC = () => {
                 <Mail className="w-5 h-5" />
               </div>
               <input
-                type="email"
+                type="text"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
+                placeholder="admin@example.com or username"
                 className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white transition-all"
               />
             </div>
