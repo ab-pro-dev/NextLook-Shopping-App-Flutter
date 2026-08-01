@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import { hashPassword } from '../src/utils/password';
 
 dotenv.config();
 
@@ -8,33 +7,6 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');
-
-  // 0. Seed/Upsert Admin User if credentials exist in env
-  const adminEmail = process.env.ADMIN_SEED_EMAIL;
-  const adminPassword = process.env.ADMIN_SEED_PASSWORD;
-
-  if (adminEmail && adminPassword) {
-    const normalizedAdminEmail = adminEmail.toLowerCase();
-    const adminPasswordHash = await hashPassword(adminPassword);
-
-    await prisma.user.upsert({
-      where: { email: normalizedAdminEmail },
-      update: {
-        role: 'ADMIN',
-        passwordHash: adminPasswordHash,
-      },
-      create: {
-        name: 'System Admin',
-        email: normalizedAdminEmail,
-        passwordHash: adminPasswordHash,
-        role: 'ADMIN',
-      },
-    });
-
-    console.log(`Admin user upserted for email: ${normalizedAdminEmail}`);
-  } else {
-    console.log('Skipping Admin user seed: ADMIN_SEED_EMAIL or ADMIN_SEED_PASSWORD not set in env.');
-  }
 
   // 0b. Seed/Upsert StoreSettings singleton row
   const firstSettings = await prisma.storeSettings.findFirst();
