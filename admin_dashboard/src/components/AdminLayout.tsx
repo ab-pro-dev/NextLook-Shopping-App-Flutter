@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { getStoredAdminUser, logoutAdmin, checkServerHealth } from '../services/api';
 import {
   LayoutDashboard,
@@ -32,8 +32,14 @@ const navItems = [
 ];
 
 export const AdminLayout: React.FC = () => {
+  const navigate = useNavigate();
   const adminUser = getStoredAdminUser();
   const location = useLocation();
+
+  const handleLogout = () => {
+    logoutAdmin();
+    navigate('/login', { replace: true });
+  };
   const [isServerLive, setIsServerLive] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -103,7 +109,7 @@ export const AdminLayout: React.FC = () => {
         {/* Logout Button */}
         <div className="p-4 border-t border-gray-800">
           <button
-            onClick={logoutAdmin}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 transition-all cursor-pointer"
           >
             <LogOut className="w-5 h-5 text-red-400" />

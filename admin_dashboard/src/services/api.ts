@@ -275,7 +275,6 @@ export function logoutAdmin(): void {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('adminUser');
-  window.location.href = '/login';
 }
 
 export function getStoredAdminUser(): AdminUser | null {
