@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../products/application/product_providers.dart';
 import '../../products/data/category_model.dart';
 import '../../products/data/product_card_model.dart';
 import '../../notifications/application/notification_providers.dart';
+import '../application/banner_providers.dart';
+import '../data/models/banner_model.dart';
 import 'widgets/home_skeletons.dart';
 
 /// Real Home Screen for NextLook matching the exact UI spec from The_App_UI.png
@@ -22,31 +25,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final PageController _bannerController = PageController();
   int _activeBannerIndex = 0;
   Timer? _bannerTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _startBannerAutoScroll();
-  }
-
-  void _startBannerAutoScroll() {
-    _bannerTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (_bannerController.hasClients) {
-        final nextPage = (_activeBannerIndex + 1) % 3;
-        _bannerController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
+  int _currentBannerCount = 0;
 
   @override
   void dispose() {
     _bannerTimer?.cancel();
     _bannerController.dispose();
     super.dispose();
+  }
+
+  void _updateAutoScrollTimer(int totalBanners) {
+    if (_currentBannerCount == totalBanners) return;
+    _currentBannerCount = totalBanners;
+    _bannerTimer?.cancel();
+
+    if (totalBanners > 1) {
+      _bannerTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+        if (_bannerController.hasClients && _currentBannerCount > 1) {
+          final nextPage = (_activeBannerIndex + 1) % _currentBannerCount;
+          _bannerController.animateToPage(
+            nextPage,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    }
   }
 
   IconData _getCategoryIcon(String iconName) {
@@ -91,6 +95,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     const darkNavy = Color(0xFF1E1E2D);
     const backgroundColor = Color(0xFFF8F9FC);
 
+    final bannersAsync = ref.watch(bannersProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final homeSectionsAsync = ref.watch(homeSectionsProvider);
 
@@ -206,55 +211,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 18),
 
-              // 2. HERO BANNER SLIDER (Height increased ~18% to 190px for proper breathing room)
-              SizedBox(
-                height: 190,
-                child: PageView(
-                  key: const Key('home_banner_slider'),
-                  controller: _bannerController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _activeBannerIndex = index;
-                    });
-                  },
+              // 2. HERO BANNER SLIDER (Dynamic banners from backend API)
+              bannersAsync.when(
+                data: (banners) => _buildBannerSection(banners),
+                loading: () => const Column(
                   children: [
-                    _buildLifestyleBannerCard(
-                      title: 'New Collection\n2026',
-                      buttonText: 'Explore Now',
-                      imageAsset: 'assets/images/onboarding_model_bg.jpg',
-                    ),
-                    _buildLifestyleBannerCard(
-                      title: 'Up to 50% Off\nSelected Items',
-                      buttonText: 'Shop Sale',
-                      imageAsset: 'assets/images/onboarding_model_bg.jpg',
-                    ),
-                    _buildLifestyleBannerCard(
-                      title: 'Discover Modern\nEssential Styles',
-                      buttonText: 'Explore',
-                      imageAsset: 'assets/images/onboarding_model_bg.jpg',
-                    ),
+                    BannerSkeleton(),
+                    SizedBox(height: 24),
                   ],
                 ),
+                error: (err, stack) => const SizedBox.shrink(),
               ),
-              const SizedBox(height: 12),
-
-              // Banner Dot Indicators
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (index) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _activeBannerIndex == index ? 20 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: _activeBannerIndex == index ? darkNavy : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 24),
 
               // 3. CATEGORIES ROW: Fixed order (Men, Women, Kids, Shoes, Accessories)
               _buildSectionHeader(
@@ -348,98 +315,175 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// Banner Card with dark lifestyle photo background & pill button matching the reference mockup
-  Widget _buildLifestyleBannerCard({
-    required String title,
-    required String buttonText,
-    required String imageAsset,
-  }) {
-    // NOTE: Promotional lifestyle photo background. Flagged for custom campaign banner assets.
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161A23),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+  /// Dynamic Hero Banner Slider section fed from backend API
+  Widget _buildBannerSection(List<BannerModel> banners) {
+    if (banners.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    _updateAutoScrollTimer(banners.length);
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 190,
+          child: PageView.builder(
+            key: const Key('home_banner_slider'),
+            controller: _bannerController,
+            itemCount: banners.length,
+            onPageChanged: (index) {
+              setState(() {
+                _activeBannerIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return _buildBannerCard(banners[index]);
+            },
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: Stack(
-          children: [
-            // Background lifestyle photo image with dark gradient overlay
-            Positioned.fill(
-              child: ShaderMask(
-                shaderCallback: (rect) {
-                  return const LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Color(0xFF0F1219), // Dark gradient on left for high text readability
-                      Color(0xEE161A23),
-                      Colors.transparent,
-                    ],
-                    stops: [0.0, 0.55, 1.0],
-                  ).createShader(rect);
-                },
-                blendMode: BlendMode.srcOver,
-                child: Image.asset(
-                  imageAsset,
-                  fit: BoxFit.cover,
-                  alignment: const Alignment(0.6, -0.3),
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: const Color(0xFF161A23),
+        ),
+        const SizedBox(height: 12),
+
+        // Banner Dot Indicators (only show if > 1 banner)
+        if (banners.length > 1)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(banners.length, (index) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: _activeBannerIndex == index ? 20 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: _activeBannerIndex == index ? const Color(0xFF1E1E2D) : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              );
+            }),
+          ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  /// Banner Card widget rendering network image, title, subtitle, and action CTA button
+  Widget _buildBannerCard(BannerModel banner) {
+    final hasCategoryNav = banner.categorySlug != null && banner.categorySlug!.trim().isNotEmpty;
+
+    void handleBannerTap() {
+      if (hasCategoryNav) {
+        context.push('/categories/${banner.categorySlug!.trim()}/products');
+      }
+    }
+
+    return GestureDetector(
+      onTap: handleBannerTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20.0),
+        decoration: BoxDecoration(
+          color: const Color(0xFF161A23),
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Stack(
+            children: [
+              // Background network photo image with dark gradient overlay
+              Positioned.fill(
+                child: ShaderMask(
+                  shaderCallback: (rect) {
+                    return const LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Color(0xFF0F1219),
+                        Color(0xEE161A23),
+                        Colors.transparent,
+                      ],
+                      stops: [0.0, 0.55, 1.0],
+                    ).createShader(rect);
+                  },
+                  blendMode: BlendMode.srcOver,
+                  child: CachedNetworkImage(
+                    imageUrl: banner.imageUrl,
+                    fit: BoxFit.cover,
+                    alignment: const Alignment(0.6, -0.3),
+                    placeholder: (context, url) => Container(color: const Color(0xFF161A23)),
+                    errorWidget: (context, url, error) => Container(
+                      color: const Color(0xFF161A23),
+                      child: const Center(
+                        child: Icon(Icons.image_not_supported_outlined, color: Colors.white30, size: 36),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Content Overlay with generous padding & breathing room
-            Padding(
-              padding: const EdgeInsets.all(22.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  // Small pill-shaped "Explore Now" button
-                  GestureDetector(
-                    onTap: () => context.push('/search'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F1219),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white24, width: 0.8),
+              // Content Overlay
+              Padding(
+                padding: const EdgeInsets.all(22.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      banner.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        height: 1.25,
                       ),
-                      child: Text(
-                        buttonText,
+                    ),
+                    if (banner.subtitle != null && banner.subtitle!.trim().isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        banner.subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
+                          color: Colors.white70,
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    // Action CTA button
+                    GestureDetector(
+                      onTap: handleBannerTap,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F1219),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white24, width: 0.8),
+                        ),
+                        child: Text(
+                          (banner.buttonText != null && banner.buttonText!.trim().isNotEmpty)
+                              ? banner.buttonText!
+                              : 'Explore Now',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

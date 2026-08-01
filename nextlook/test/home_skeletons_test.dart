@@ -8,6 +8,7 @@ import 'package:nextlook/core/widgets/skeleton/skeleton_text.dart';
 import 'package:nextlook/features/home/presentation/widgets/home_skeletons.dart';
 import 'package:nextlook/features/home/presentation/home_screen.dart';
 import 'package:nextlook/features/products/application/product_providers.dart';
+import 'package:nextlook/features/home/application/banner_providers.dart';
 import 'package:nextlook/features/products/data/category_model.dart';
 import 'package:nextlook/features/products/data/home_sections_model.dart';
 import 'package:nextlook/features/products/data/product_card_model.dart';
@@ -114,6 +115,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bannersProvider.overrideWith((ref) async => []),
             categoriesProvider.overrideWith((ref) => categoriesCompleter.future),
             homeSectionsProvider.overrideWith((ref) => sectionsCompleter.future),
           ],
@@ -134,6 +136,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bannersProvider.overrideWith((ref) async => []),
             categoriesProvider.overrideWith((ref) async => [sampleCategory]),
             homeSectionsProvider.overrideWith((ref) => sectionsCompleter.future),
           ],
@@ -155,6 +158,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            bannersProvider.overrideWith((ref) async => []),
             categoriesProvider.overrideWith((ref) async => throw Exception('Network error')),
             homeSectionsProvider.overrideWith((ref) async => sampleHomeSections),
           ],
@@ -163,7 +167,8 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Failed to load categories'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
