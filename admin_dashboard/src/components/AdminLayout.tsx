@@ -11,6 +11,7 @@ import {
   Star,
   BarChart3,
   Settings,
+  User,
   LogOut,
   Search,
   Bell,
@@ -29,11 +30,12 @@ const navItems = [
   { name: 'Reviews', path: '/reviews', icon: Star, isBuilt: false },
   { name: 'Reports', path: '/reports', icon: BarChart3, isBuilt: false },
   { name: 'Settings', path: '/settings', icon: Settings, isBuilt: true },
+  { name: 'Profile', path: '/profile', icon: User, isBuilt: true },
 ];
 
 export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
-  const adminUser = getStoredAdminUser();
+  const [adminUser, setAdminUser] = useState(getStoredAdminUser());
   const location = useLocation();
 
   const handleLogout = () => {
@@ -54,9 +56,17 @@ export const AdminLayout: React.FC = () => {
     verifyHealth();
     const interval = setInterval(verifyHealth, 15000);
 
+    const handleUserUpdate = () => {
+      setAdminUser(getStoredAdminUser());
+    };
+    window.addEventListener('adminUserUpdated', handleUserUpdate);
+    window.addEventListener('storage', handleUserUpdate);
+
     return () => {
       isMounted = false;
       clearInterval(interval);
+      window.removeEventListener('adminUserUpdated', handleUserUpdate);
+      window.removeEventListener('storage', handleUserUpdate);
     };
   }, []);
 
@@ -163,9 +173,17 @@ export const AdminLayout: React.FC = () => {
             <div className="h-8 w-px bg-gray-200" />
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-tr from-[#6C63FF] to-[#8B85FF] rounded-full flex items-center justify-center text-white font-bold shadow-md shadow-[#6C63FF]/20">
-                {adminUser?.name ? adminUser.name.charAt(0).toUpperCase() : 'A'}
-              </div>
+              {adminUser?.avatarUrl ? (
+                <img
+                  src={adminUser.avatarUrl}
+                  alt={adminUser.name || 'Admin'}
+                  className="w-10 h-10 rounded-full object-cover border border-[#6C63FF]/30 shadow-md"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-tr from-[#6C63FF] to-[#8B85FF] rounded-full flex items-center justify-center text-white font-bold shadow-md shadow-[#6C63FF]/20">
+                  {adminUser?.name ? adminUser.name.charAt(0).toUpperCase() : 'A'}
+                </div>
+              )}
               <div className="hidden sm:block text-left">
                 <div className="text-sm font-semibold text-gray-900 leading-tight">
                   {adminUser?.name || 'System Admin'}

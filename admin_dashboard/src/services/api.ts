@@ -433,3 +433,25 @@ export async function uploadAdminImage(file: File, folder: 'avatars' | 'products
 export async function deleteAdminImage(publicId: string): Promise<void> {
   await api.delete('/api/admin/upload/image', { data: { publicId } });
 }
+
+/**
+ * Admin Profile & Password API Services
+ */
+export interface UpdateProfilePayload {
+  name?: string;
+  avatarUrl?: string;
+}
+
+export async function fetchCurrentAdminUser(): Promise<AdminUser> {
+  const response = await api.get<{ user: AdminUser }>('/api/auth/me');
+  return response.data.user;
+}
+
+export async function updateAdminProfile(payload: UpdateProfilePayload): Promise<AdminUser> {
+  const response = await api.put<{ user: AdminUser }>('/api/auth/me', payload);
+  return response.data.user;
+}
+
+export async function changeAdminPassword(payload: { currentPassword: string; newPassword: string }): Promise<void> {
+  await api.put('/api/auth/me/password', payload);
+}

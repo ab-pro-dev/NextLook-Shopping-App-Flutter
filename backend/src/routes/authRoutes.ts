@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { googleAuth, refresh, me, updateProfile, adminLogin, adminSetInitialPassword } from '../controllers/authController';
+import { googleAuth, refresh, me, updateProfile, changePassword, adminLogin, adminSetInitialPassword } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -15,5 +15,6 @@ router.post('/admin-set-initial-password', adminSetInitialPassword);
 router.post('/refresh', refresh);
 router.get('/me', authenticateToken, me);
 router.put('/me', authenticateToken, updateProfile);
+router.put('/me/password', authenticateToken, changePassword);
 
 export default router;

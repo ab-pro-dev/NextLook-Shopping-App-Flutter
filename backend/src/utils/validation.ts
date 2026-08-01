@@ -15,12 +15,26 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, 'Refresh token is required'),
 });
 
-export const updateProfileSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, 'Name cannot be empty')
-    .max(100, 'Name must be 100 characters or fewer'),
+export const updateProfileSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, 'Name cannot be empty')
+      .max(100, 'Name must be 100 characters or fewer')
+      .optional(),
+    avatarUrl: z
+      .string()
+      .url('Avatar URL must be a valid URL')
+      .optional(),
+  })
+  .refine((data) => data.name !== undefined || data.avatarUrl !== undefined, {
+    message: 'At least one field (name or avatarUrl) must be provided',
+  });
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters long'),
 });
 
 export const adminLoginSchema = z.object({

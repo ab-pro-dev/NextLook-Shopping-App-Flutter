@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from '../utils/tokens';
-import { refreshTokenSchema, updateProfileSchema, adminLoginSchema, adminSetInitialPasswordSchema } from '../utils/validation';
+import { refreshTokenSchema, updateProfileSchema, changePasswordSchema, adminLoginSchema, adminSetInitialPasswordSchema } from '../utils/validation';
 import { comparePassword, hashPassword } from '../utils/password';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { verifyGoogleToken } from '../services/googleAuthService';
@@ -164,7 +164,7 @@ export async function me(req: AuthenticatedRequest, res: Response) {
 
 /**
  * PUT /api/auth/me
- * Update current authenticated user profile (name)
+ * Update current authenticated user profile (name, avatarUrl)
  */
 export async function updateProfile(req: AuthenticatedRequest, res: Response) {
   try {
@@ -182,11 +182,15 @@ export async function updateProfile(req: AuthenticatedRequest, res: Response) {
       });
     }
 
-    const { name } = parseResult.data;
+    const { name, avatarUrl } = parseResult.data;
+
+    const updateData: { name?: string; avatarUrl?: string } = {};
+    if (name !== undefined) updateData.name = name;
+    if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { name },
+      data: updateData,
     });
 
     const { passwordHash: _, ...userWithoutPassword } = updatedUser;
@@ -196,6 +200,59 @@ export async function updateProfile(req: AuthenticatedRequest, res: Response) {
     });
   } catch (error: any) {
     console.error('Error in updateProfile:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/**
+ * PUT /api/auth/me/password
+ * Change password for authenticated user
+ */
+export async function changePassword(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const parseResult = changePasswordSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues.map((i) => i.message).join(', ');
+      return res.status(400).json({
+        message: errorMessage || 'Validation failed',
+        errors: parseResult.error.issues,
+      });
+    }
+
+    const { currentPassword, newPassword } = parseResult.data;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.passwordHash) {
+      return res.status(400).json({ message: 'Password login is not enabled for this account' });
+    }
+
+    const isMatch = await comparePassword(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    const newHashedPassword = await hashPassword(newPassword);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newHashedPassword },
+    });
+
+    return res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error: any) {
+    console.error('Error in changePassword:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
