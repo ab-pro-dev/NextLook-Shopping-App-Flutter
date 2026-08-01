@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { AdminLayout } from './components/AdminLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -14,7 +14,7 @@ import { PlaceholderPage } from './pages/PlaceholderPage';
 
 export function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         {/* Public Login Route */}
         <Route path="/login" element={<LoginPage />} />
@@ -39,7 +39,7 @@ export function App() {
         {/* Fallback Redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 

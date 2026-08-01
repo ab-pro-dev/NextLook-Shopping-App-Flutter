@@ -20,6 +20,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
+import { useInactivityTimer } from '../hooks/useInactivityTimer';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard, isBuilt: true },
@@ -36,6 +37,7 @@ const navItems = [
 ];
 
 export const AdminLayout: React.FC = () => {
+  useInactivityTimer();
   const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState(getStoredAdminUser());
   const location = useLocation();

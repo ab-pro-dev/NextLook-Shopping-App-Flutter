@@ -9,6 +9,14 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(() => {
+    const reason = sessionStorage.getItem('logoutReason');
+    if (reason) {
+      sessionStorage.removeItem('logoutReason');
+      return reason;
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,6 +27,7 @@ export const LoginPage: React.FC = () => {
     }
 
     setError(null);
+    setSessionNotice(null);
     setLoading(true);
 
     try {
@@ -52,6 +61,13 @@ export const LoginPage: React.FC = () => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
+          {sessionNotice && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl flex items-start gap-3 text-sm">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <span>{sessionNotice}</span>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 text-sm">
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />

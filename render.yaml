@@ -1,11 +1,8 @@
 services:
-  - type: static
+  - type: static_site
     name: nextlook-admin-dashboard
-    repo: https://github.com/ab-pro-dev/NextLook-Shopping-App-Flutter
-    branch: main
-    rootDir: admin_dashboard
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    buildCommand: cd admin_dashboard && npm install && npm run build
+    staticPublishPath: admin_dashboard/dist
     routes:
       - type: rewrite
         source: /*

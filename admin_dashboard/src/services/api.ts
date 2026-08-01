@@ -27,9 +27,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('adminUser');
+      logoutAdmin('Session expired. Please log in again.');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
@@ -271,10 +269,26 @@ export async function loginAdmin(email: string, password: string): Promise<Admin
   return user;
 }
 
-export function logoutAdmin(): void {
+export function isJwtExpired(token: string): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp) return false;
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
+export function logoutAdmin(reason?: string): void {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('adminUser');
+  localStorage.removeItem('lastActivityTime');
+  if (reason) {
+    sessionStorage.setItem('logoutReason', reason);
+  }
 }
 
 export function getStoredAdminUser(): AdminUser | null {
@@ -290,7 +304,17 @@ export function getStoredAdminUser(): AdminUser | null {
 export function isAuthenticatedAdmin(): boolean {
   const token = localStorage.getItem('accessToken');
   const user = getStoredAdminUser();
-  return Boolean(token && user && user.role === 'ADMIN');
+  if (!token || !user || user.role !== 'ADMIN') return false;
+
+  if (isJwtExpired(token)) {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken || isJwtExpired(refreshToken)) {
+      logoutAdmin('Your session has expired. Please log in again.');
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
