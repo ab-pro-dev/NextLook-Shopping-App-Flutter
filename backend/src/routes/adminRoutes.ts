@@ -25,6 +25,12 @@ import {
   getAdminCustomers,
   getAdminCustomerById,
 } from '../controllers/adminCustomerController';
+import {
+  getAdminBanners,
+  createAdminBanner,
+  updateAdminBanner,
+  deleteAdminBanner,
+} from '../controllers/bannerController';
 import { updateAdminSettings } from '../controllers/settingsController';
 
 const router = Router();
@@ -60,6 +66,12 @@ router.delete('/categories/:id', deleteAdminCategory);
 // Admin Customer Management (Read-Only)
 router.get('/customers', getAdminCustomers);
 router.get('/customers/:id', getAdminCustomerById);
+
+// Admin Banner Management
+router.get('/banners', getAdminBanners);
+router.post('/banners', createAdminBanner);
+router.put('/banners/:id', updateAdminBanner);
+router.delete('/banners/:id', deleteAdminBanner);
 
 // Admin Store Settings
 router.put('/settings', updateAdminSettings);

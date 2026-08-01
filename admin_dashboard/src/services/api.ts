@@ -455,3 +455,48 @@ export async function updateAdminProfile(payload: UpdateProfilePayload): Promise
 export async function changeAdminPassword(payload: { currentPassword: string; newPassword: string }): Promise<void> {
   await api.put('/api/auth/me/password', payload);
 }
+
+/**
+ * Admin Banner API Services
+ */
+export interface AdminBanner {
+  id: string;
+  imageUrl: string;
+  title: string;
+  subtitle?: string | null;
+  buttonText?: string | null;
+  categorySlug?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BannerPayload {
+  title: string;
+  imageUrl: string;
+  subtitle?: string | null;
+  buttonText?: string | null;
+  categorySlug?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export async function fetchAdminBanners(): Promise<AdminBanner[]> {
+  const response = await api.get<AdminBanner[]>('/api/admin/banners');
+  return response.data;
+}
+
+export async function createAdminBanner(payload: BannerPayload): Promise<AdminBanner> {
+  const response = await api.post<AdminBanner>('/api/admin/banners', payload);
+  return response.data;
+}
+
+export async function updateAdminBanner(id: string, payload: Partial<BannerPayload>): Promise<AdminBanner> {
+  const response = await api.put<AdminBanner>(`/api/admin/banners/${id}`, payload);
+  return response.data;
+}
+
+export async function deleteAdminBanner(id: string): Promise<void> {
+  await api.delete(`/api/admin/banners/${id}`);
+}

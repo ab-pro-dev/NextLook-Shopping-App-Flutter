@@ -47,3 +47,15 @@ export const adminSetInitialPasswordSchema = z.object({
   newPassword: z.string().min(8, 'Password must be at least 8 characters long'),
   setupSecret: z.string().min(1, 'Setup secret is required'),
 });
+
+export const createBannerSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  imageUrl: z.string().url('Image URL must be a valid URL'),
+  subtitle: z.string().nullable().optional(),
+  buttonText: z.string().nullable().optional(),
+  categorySlug: z.string().nullable().optional(),
+  sortOrder: z.number().int().default(0),
+  isActive: z.boolean().default(true),
+});
+
+export const updateBannerSchema = createBannerSchema.partial();

@@ -255,3 +255,19 @@ model StoreSettings {
   taxRatePercent        Float    @default(0)
   updatedAt             DateTime @updatedAt
 }
+
+model Banner {
+  id           String   @id @default(uuid())
+  imageUrl     String
+  title        String
+  subtitle     String?
+  buttonText   String?
+  categorySlug String?
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}

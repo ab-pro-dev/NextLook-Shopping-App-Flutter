@@ -13,6 +13,7 @@ import adminRoutes from './routes/adminRoutes';
 import settingsRoutes from './routes/settingsRoutes';
 
 import uploadRoutes from './routes/uploadRoutes';
+import bannerRoutes from './routes/bannerRoutes';
 
 const systemPort = process.env.PORT;
 dotenv.config();
@@ -34,6 +35,9 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);
+
+app.use('/api/banners', bannerRoutes);
+app.use('/banners', bannerRoutes);
 
 app.use('/api/categories', categoryRoutes);
 app.use('/categories', categoryRoutes);
