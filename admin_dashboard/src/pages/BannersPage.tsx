@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   type AdminBanner,
   type Category,
+  type AdminProduct,
   type BannerPayload,
   fetchAdminBanners,
   fetchAdminCategories,
+  fetchAdminProducts,
   createAdminBanner,
   updateAdminBanner,
   deleteAdminBanner,
@@ -22,11 +24,13 @@ import {
   ArrowUpDown,
   X,
   Tag,
+  ShoppingBag,
 } from 'lucide-react';
 
 export const BannersPage: React.FC = () => {
   const [banners, setBanners] = useState<AdminBanner[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -40,11 +44,16 @@ export const BannersPage: React.FC = () => {
   const [subtitle, setSubtitle] = useState('');
   const [buttonText, setButtonText] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [targetType, setTargetType] = useState<'none' | 'category' | 'product'>('none');
   const [categorySlug, setCategorySlug] = useState('');
+  const [targetProductId, setTargetProductId] = useState('');
   const [sortOrder, setSortOrder] = useState<number>(0);
   const [isActive, setIsActive] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Search filter for product selector dropdown
+  const [productSearch, setProductSearch] = useState('');
 
   // Delete State
   const [deletingBanner, setDeletingBanner] = useState<AdminBanner | null>(null);
@@ -58,12 +67,14 @@ export const BannersPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [bannersData, categoriesData] = await Promise.all([
+      const [bannersData, categoriesData, productsData] = await Promise.all([
         fetchAdminBanners(),
         fetchAdminCategories(),
+        fetchAdminProducts(),
       ]);
       setBanners(bannersData);
       setCategories(categoriesData);
+      setProducts(productsData);
     } catch (err: any) {
       console.error('Failed to load banners:', err);
       setError(err.response?.data?.message || err.message || 'Failed to load promotional banners');
@@ -78,10 +89,13 @@ export const BannersPage: React.FC = () => {
     setSubtitle('');
     setButtonText('Shop Now');
     setImageUrl('');
+    setTargetType('none');
     setCategorySlug('');
+    setTargetProductId('');
     setSortOrder(banners.length);
     setIsActive(true);
     setFormError(null);
+    setProductSearch('');
     setIsModalOpen(true);
   };
 
@@ -91,10 +105,25 @@ export const BannersPage: React.FC = () => {
     setSubtitle(banner.subtitle || '');
     setButtonText(banner.buttonText || '');
     setImageUrl(banner.imageUrl);
-    setCategorySlug(banner.categorySlug || '');
+
+    if (banner.targetProductId) {
+      setTargetType('product');
+      setTargetProductId(banner.targetProductId);
+      setCategorySlug('');
+    } else if (banner.categorySlug) {
+      setTargetType('category');
+      setCategorySlug(banner.categorySlug);
+      setTargetProductId('');
+    } else {
+      setTargetType('none');
+      setCategorySlug('');
+      setTargetProductId('');
+    }
+
     setSortOrder(banner.sortOrder);
     setIsActive(banner.isActive);
     setFormError(null);
+    setProductSearch('');
     setIsModalOpen(true);
   };
 
@@ -122,12 +151,22 @@ export const BannersPage: React.FC = () => {
       return;
     }
 
+    if (targetType === 'category' && !categorySlug.trim()) {
+      setFormError('Please select a target category.');
+      return;
+    }
+    if (targetType === 'product' && !targetProductId.trim()) {
+      setFormError('Please select a target product.');
+      return;
+    }
+
     const payload: BannerPayload = {
       title: title.trim(),
       imageUrl: imageUrl.trim(),
       subtitle: subtitle.trim() || null,
       buttonText: buttonText.trim() || null,
-      categorySlug: categorySlug.trim() || null,
+      categorySlug: targetType === 'category' ? categorySlug.trim() || null : null,
+      targetProductId: targetType === 'product' ? targetProductId.trim() || null : null,
       sortOrder: Number(sortOrder) || 0,
       isActive,
     };
@@ -167,6 +206,19 @@ export const BannersPage: React.FC = () => {
     } finally {
       setDeleteLoading(false);
     }
+  };
+
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.brand.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.id.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
+  const getProductName = (id?: string | null) => {
+    if (!id) return '';
+    const match = products.find((p) => p.id === id);
+    return match ? match.name : id.slice(0, 8);
   };
 
   if (loading && banners.length === 0) {
@@ -240,13 +292,21 @@ export const BannersPage: React.FC = () => {
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />
-              <div className="absolute top-3 left-3 flex items-center gap-2">
+              <div className="absolute top-3 left-3 flex flex-wrap items-center gap-2 max-w-[70%]">
                 <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md text-white text-xs font-semibold rounded-lg flex items-center gap-1">
                   <ArrowUpDown className="w-3 h-3 text-[#6C63FF]" /> Order #{banner.sortOrder}
                 </span>
-                {banner.categorySlug && (
+                {banner.targetProductId ? (
+                  <span className="px-2.5 py-1 bg-amber-500/90 backdrop-blur-md text-white text-xs font-semibold rounded-lg flex items-center gap-1 truncate max-w-[180px]">
+                    <ShoppingBag className="w-3 h-3 shrink-0" /> {getProductName(banner.targetProductId)}
+                  </span>
+                ) : banner.categorySlug ? (
                   <span className="px-2.5 py-1 bg-[#6C63FF]/90 backdrop-blur-md text-white text-xs font-semibold rounded-lg flex items-center gap-1">
                     <Tag className="w-3 h-3" /> {banner.categorySlug}
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 bg-gray-600/70 backdrop-blur-md text-white text-xs font-semibold rounded-lg">
+                    No Target Link
                   </span>
                 )}
               </div>
@@ -433,33 +493,129 @@ export const BannersPage: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Button Action Text</label>
-                <input
-                  type="text"
-                  value={buttonText}
-                  onChange={(e) => setButtonText(e.target.value)}
-                  placeholder="e.g. Shop Now"
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white"
-                />
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Button Action Text</label>
+              <input
+                type="text"
+                value={buttonText}
+                onChange={(e) => setButtonText(e.target.value)}
+                placeholder="e.g. Shop Now"
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white"
+              />
+            </div>
+
+            {/* Target Navigation Selection */}
+            <div className="space-y-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+              <label className="block text-xs font-semibold text-gray-800 uppercase tracking-wider">
+                Click Navigation Action
+              </label>
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetType('none');
+                    setCategorySlug('');
+                    setTargetProductId('');
+                  }}
+                  className={`py-2 px-3 text-xs font-bold rounded-xl transition-all border cursor-pointer ${
+                    targetType === 'none'
+                      ? 'bg-[#1E1E2D] text-white border-[#1E1E2D]'
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  None
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetType('category');
+                    setTargetProductId('');
+                  }}
+                  className={`py-2 px-3 text-xs font-bold rounded-xl transition-all border cursor-pointer flex items-center justify-center gap-1 ${
+                    targetType === 'category'
+                      ? 'bg-[#6C63FF] text-white border-[#6C63FF]'
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  <Tag className="w-3.5 h-3.5" /> Category
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetType('product');
+                    setCategorySlug('');
+                  }}
+                  className={`py-2 px-3 text-xs font-bold rounded-xl transition-all border cursor-pointer flex items-center justify-center gap-1 ${
+                    targetType === 'product'
+                      ? 'bg-amber-500 text-white border-amber-500'
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" /> Product
+                </button>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Target Category (Optional)</label>
-                <select
-                  value={categorySlug}
-                  onChange={(e) => setCategorySlug(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white cursor-pointer"
-                >
-                  <option value="">None (No category navigation)</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.slug}>
-                      {cat.name} ({cat.slug})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Target Category Select */}
+              {targetType === 'category' && (
+                <div className="pt-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Select Target Category <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={categorySlug}
+                    onChange={(e) => setCategorySlug(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] cursor-pointer"
+                  >
+                    <option value="">-- Choose Category --</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.slug}>
+                        {cat.name} ({cat.slug})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Searchable Target Product Select */}
+              {targetType === 'product' && (
+                <div className="pt-2 space-y-2">
+                  <label className="block text-xs font-semibold text-gray-700">
+                    Select Target Product <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder="Search product name or brand..."
+                    className="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <select
+                    value={targetProductId}
+                    onChange={(e) => setTargetProductId(e.target.value)}
+                    size={4}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer max-h-36 overflow-y-auto"
+                  >
+                    {filteredProducts.map((p) => (
+                      <option key={p.id} value={p.id} className="py-1">
+                        {p.name} — ${p.price} ({p.brand})
+                      </option>
+                    ))}
+                    {filteredProducts.length === 0 && (
+                      <option disabled value="">
+                        No products match search
+                      </option>
+                    )}
+                  </select>
+                  {targetProductId && (
+                    <p className="text-[11px] text-amber-700 font-medium m-0">
+                      Selected: {getProductName(targetProductId)}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

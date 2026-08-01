@@ -466,6 +466,7 @@ export interface AdminBanner {
   subtitle?: string | null;
   buttonText?: string | null;
   categorySlug?: string | null;
+  targetProductId?: string | null;
   sortOrder: number;
   isActive: boolean;
   createdAt: string;
@@ -478,6 +479,7 @@ export interface BannerPayload {
   subtitle?: string | null;
   buttonText?: string | null;
   categorySlug?: string | null;
+  targetProductId?: string | null;
   sortOrder: number;
   isActive: boolean;
 }

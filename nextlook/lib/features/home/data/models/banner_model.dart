@@ -5,6 +5,7 @@ class BannerModel {
   final String? subtitle;
   final String? buttonText;
   final String? categorySlug;
+  final String? targetProductId;
   final int sortOrder;
 
   const BannerModel({
@@ -14,6 +15,7 @@ class BannerModel {
     this.subtitle,
     this.buttonText,
     this.categorySlug,
+    this.targetProductId,
     this.sortOrder = 0,
   });
 
@@ -25,6 +27,7 @@ class BannerModel {
       subtitle: json['subtitle'] as String?,
       buttonText: json['buttonText'] as String?,
       categorySlug: json['categorySlug'] as String?,
+      targetProductId: json['targetProductId'] as String?,
       sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
     );
   }
@@ -37,6 +40,7 @@ class BannerModel {
       'subtitle': subtitle,
       'buttonText': buttonText,
       'categorySlug': categorySlug,
+      'targetProductId': targetProductId,
       'sortOrder': sortOrder,
     };
   }

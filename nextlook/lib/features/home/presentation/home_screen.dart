@@ -367,10 +367,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// Banner Card widget rendering network image, title, subtitle, and action CTA button
   Widget _buildBannerCard(BannerModel banner) {
+    final hasProductNav = banner.targetProductId != null && banner.targetProductId!.trim().isNotEmpty;
     final hasCategoryNav = banner.categorySlug != null && banner.categorySlug!.trim().isNotEmpty;
 
     void handleBannerTap() {
-      if (hasCategoryNav) {
+      if (hasProductNav) {
+        context.push('/product/${banner.targetProductId!.trim()}');
+      } else if (hasCategoryNav) {
         context.push('/categories/${banner.categorySlug!.trim()}/products');
       }
     }

@@ -12,7 +12,7 @@ import 'package:nextlook/features/home/presentation/home_screen.dart';
 
 void main() {
   group('BannerModel Tests', () {
-    test('fromJson parses full JSON object correctly', () {
+    test('fromJson parses full JSON object correctly including targetProductId', () {
       final json = {
         'id': 'b-1',
         'imageUrl': 'https://res.cloudinary.com/test/banner.jpg',
@@ -20,6 +20,7 @@ void main() {
         'subtitle': 'Selected shirts & shorts',
         'buttonText': 'Shop Summer',
         'categorySlug': 'men',
+        'targetProductId': 'p-100',
         'sortOrder': 2,
       };
 
@@ -31,6 +32,7 @@ void main() {
       expect(banner.subtitle, 'Selected shirts & shorts');
       expect(banner.buttonText, 'Shop Summer');
       expect(banner.categorySlug, 'men');
+      expect(banner.targetProductId, 'p-100');
       expect(banner.sortOrder, 2);
     });
 
@@ -48,6 +50,7 @@ void main() {
       expect(banner.subtitle, isNull);
       expect(banner.buttonText, isNull);
       expect(banner.categorySlug, isNull);
+      expect(banner.targetProductId, isNull);
       expect(banner.sortOrder, 0);
     });
   });
@@ -63,6 +66,59 @@ void main() {
       trending: [],
       bestSellers: [],
     );
+
+    testWidgets('Navigates directly to product detail screen when targetProductId is set', (tester) async {
+      final mockBanners = [
+        const BannerModel(
+          id: 'b-product',
+          imageUrl: 'https://via.placeholder.com/600x300',
+          title: 'Featured Leather Jacket',
+          buttonText: 'Buy Jacket',
+          targetProductId: 'prod-jacket-123',
+          sortOrder: 1,
+        ),
+      ];
+
+      final router = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: '/product/:id',
+            builder: (context, state) => Scaffold(
+              body: Text('Product Detail Screen: ${state.pathParameters['id']}'),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bannersProvider.overrideWith((ref) async => mockBanners),
+            categoriesProvider.overrideWith((ref) async => mockCategories),
+            homeSectionsProvider.overrideWith((ref) async => mockHomeSections),
+            unreadNotificationCountProvider.overrideWith((ref) => 0),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Featured Leather Jacket'), findsOneWidget);
+
+      await tester.tap(find.text('Buy Jacket'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Product Detail Screen: prod-jacket-123'), findsOneWidget);
+    });
 
     testWidgets('Renders real banners when bannersProvider has data', (tester) async {
       final mockBanners = [

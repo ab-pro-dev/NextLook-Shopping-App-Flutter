@@ -54,6 +54,7 @@ export const createBannerSchema = z.object({
   subtitle: z.string().nullable().optional(),
   buttonText: z.string().nullable().optional(),
   categorySlug: z.string().nullable().optional(),
+  targetProductId: z.string().nullable().optional(),
   sortOrder: z.number().int().default(0),
   isActive: z.boolean().default(true),
 });
