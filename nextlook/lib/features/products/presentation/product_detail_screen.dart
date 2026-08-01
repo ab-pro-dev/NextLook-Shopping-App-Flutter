@@ -687,48 +687,81 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  /// Similar Products Section fetching products from the same category
+  /// Similar Products Section fetching products strictly from the same category
   Widget _buildSimilarProductsSection(WidgetRef ref, ProductDetail product) {
     const darkNavy = Color(0xFF1E1E2D);
     const primaryPurple = Color(0xFF6C63FF);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Similar Products',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: darkNavy,
+    return FutureBuilder(
+      future: ref.read(productRepositoryProvider).getProducts(
+            category: product.categorySlug,
+            limit: 20,
           ),
-        ),
-        const SizedBox(height: 14),
-        FutureBuilder(
-          future: ref.read(productRepositoryProvider).getProducts(category: product.categorySlug),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 200,
-                child: Center(
-                  child: CircularProgressIndicator(strokeWidth: 2, color: primaryPurple),
-                ),
-              );
-            }
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 200,
+            child: Center(
+              child: CircularProgressIndicator(strokeWidth: 2, color: primaryPurple),
+            ),
+          );
+        }
 
-            if (snapshot.hasError || !snapshot.hasData) {
-              return const SizedBox.shrink();
-            }
+        if (snapshot.hasError || !snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
 
-            final products = snapshot.data!.products
-                .where((p) => p.id != product.id)
-                .toList();
+        // Strict category filter: same category, excluding current product itself
+        final products = snapshot.data!.products
+            .where((p) => p.id != product.id)
+            .toList();
 
-            if (products.isEmpty) {
-              return const SizedBox.shrink();
-            }
+        if (products.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-            return SizedBox(
+        // Relevance ranking within same category: prioritize matching brand and title keywords
+        final currentTitleWords = product.name
+            .toLowerCase()
+            .split(RegExp(r'\s+'))
+            .where((w) => w.length > 2)
+            .toSet();
+
+        products.sort((a, b) {
+          int scoreA = 0;
+          int scoreB = 0;
+
+          if (product.brand != null && product.brand!.isNotEmpty) {
+            if (a.brand?.toLowerCase() == product.brand!.toLowerCase()) scoreA += 10;
+            if (b.brand?.toLowerCase() == product.brand!.toLowerCase()) scoreB += 10;
+          }
+
+          final wordsA = a.name.toLowerCase().split(RegExp(r'\s+'));
+          final wordsB = b.name.toLowerCase().split(RegExp(r'\s+'));
+
+          for (final w in wordsA) {
+            if (currentTitleWords.contains(w)) scoreA += 2;
+          }
+          for (final w in wordsB) {
+            if (currentTitleWords.contains(w)) scoreB += 2;
+          }
+
+          return scoreB.compareTo(scoreA);
+        });
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Similar Products',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: darkNavy,
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
               height: 265,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -743,10 +776,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   );
                 },
               ),
-            );
-          },
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
