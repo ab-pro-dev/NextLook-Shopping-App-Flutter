@@ -22,3 +22,14 @@ export const updateProfileSchema = z.object({
     .min(1, 'Name cannot be empty')
     .max(100, 'Name must be 100 characters or fewer'),
 });
+
+export const adminLoginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export const adminSetInitialPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters long'),
+  setupSecret: z.string().min(1, 'Setup secret is required'),
+});

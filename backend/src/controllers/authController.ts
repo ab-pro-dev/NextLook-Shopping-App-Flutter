@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from '../utils/tokens';
-import { refreshTokenSchema, updateProfileSchema } from '../utils/validation';
+import { refreshTokenSchema, updateProfileSchema, adminLoginSchema, adminSetInitialPasswordSchema } from '../utils/validation';
+import { comparePassword, hashPassword } from '../utils/password';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { verifyGoogleToken } from '../services/googleAuthService';
 import { Role } from '@prisma/client';
@@ -198,3 +199,107 @@ export async function updateProfile(req: AuthenticatedRequest, res: Response) {
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
+
+/**
+ * POST /api/auth/admin-login
+ * Body: { email, password }
+ * Authenticates an Admin user using email and password.
+ * Returns generic "Invalid credentials" error for any failure.
+ */
+export async function adminLogin(req: Request, res: Response) {
+  try {
+    const parseResult = adminLoginSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const { email, password } = parseResult.data;
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    // Check: user exists, is ADMIN, has passwordHash, and password matches
+    if (!user || user.role !== Role.ADMIN || !user.passwordHash) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const isMatch = await comparePassword(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
+    const { passwordHash: _, ...userWithoutPassword } = user;
+
+    return res.status(200).json({
+      user: userWithoutPassword,
+      accessToken,
+      refreshToken,
+    });
+  } catch (error: any) {
+    console.error('Error in adminLogin:', error);
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+}
+
+/**
+ * POST /api/auth/admin-set-initial-password
+ * Body: { email, newPassword, setupSecret }
+ * One-time setup endpoint to set an initial password on an admin account.
+ * Requires setupSecret matching process.env.ADMIN_SETUP_SECRET.
+ * Only works if user.passwordHash is currently null.
+ */
+export async function adminSetInitialPassword(req: Request, res: Response) {
+  try {
+    const parseResult = adminSetInitialPasswordSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: parseResult.error.issues,
+      });
+    }
+
+    const { email, newPassword, setupSecret } = parseResult.data;
+    const expectedSecret = process.env.ADMIN_SETUP_SECRET;
+
+    if (!expectedSecret || setupSecret !== expectedSecret) {
+      return res.status(403).json({ message: 'Invalid setup secret' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (!user || user.role !== Role.ADMIN) {
+      return res.status(404).json({ message: 'Admin user not found' });
+    }
+
+    // Safety Guard: Only set if passwordHash is currently null or empty
+    if (user.passwordHash && user.passwordHash.length > 0) {
+      return res.status(400).json({ message: 'Admin password has already been set' });
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: hashedPassword },
+    });
+
+    const { passwordHash: _, ...userWithoutPassword } = updatedUser;
+
+    return res.status(200).json({
+      message: 'Admin initial password successfully configured',
+      user: userWithoutPassword,
+    });
+  } catch (error: any) {
+    console.error('Error in adminSetInitialPassword:', error);
+    return res.status(500).json({ message: 'Failed to configure initial admin password' });
+  }
+}
+

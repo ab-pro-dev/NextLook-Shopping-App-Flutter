@@ -248,7 +248,7 @@ export async function loginAdminWithGoogle(idToken: string): Promise<AdminUser> 
  * Login admin user and enforce client-side ADMIN role requirement (legacy)
  */
 export async function loginAdmin(email: string, password: string): Promise<AdminUser> {
-  const response = await api.post<LoginResponse>('/api/auth/login', {
+  const response = await api.post<LoginResponse>('/api/auth/admin-login', {
     email: email.trim(),
     password,
   });
