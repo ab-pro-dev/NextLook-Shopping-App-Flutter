@@ -407,3 +407,29 @@ export async function fetchAdminCustomerById(id: string): Promise<AdminCustomerD
   const response = await api.get<AdminCustomerDetail>(`/api/admin/customers/${id}`);
   return response.data;
 }
+
+/**
+ * Admin Image Upload Services (Cloudinary)
+ */
+export interface UploadImageResponse {
+  url: string;
+  publicId: string;
+}
+
+export async function uploadAdminImage(file: File, folder: 'avatars' | 'products' | 'banners' = 'products'): Promise<UploadImageResponse> {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('folder', folder);
+
+  const response = await api.post<UploadImageResponse>('/api/admin/upload/image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data;
+}
+
+export async function deleteAdminImage(publicId: string): Promise<void> {
+  await api.delete('/api/admin/upload/image', { data: { publicId } });
+}

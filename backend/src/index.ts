@@ -12,6 +12,8 @@ import notificationRoutes from './routes/notificationRoutes';
 import adminRoutes from './routes/adminRoutes';
 import settingsRoutes from './routes/settingsRoutes';
 
+import uploadRoutes from './routes/uploadRoutes';
+
 const systemPort = process.env.PORT;
 dotenv.config();
 
@@ -56,6 +58,9 @@ app.use('/notifications', notificationRoutes);
 
 app.use('/api/settings', settingsRoutes);
 app.use('/settings', settingsRoutes);
+
+app.use('/api/admin/upload', uploadRoutes);
+app.use('/admin/upload', uploadRoutes);
 
 app.use('/api/admin', adminRoutes);
 app.use('/admin', adminRoutes);

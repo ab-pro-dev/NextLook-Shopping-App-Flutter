@@ -6,6 +6,7 @@ import {
   createAdminProduct,
   updateAdminProduct,
 } from '../services/api';
+import { ImageUploadField } from './ImageUploadField';
 import { X, Plus, Trash2, Loader2, AlertCircle, Image as ImageIcon, Palette, Ruler } from 'lucide-react';
 
 interface ProductFormModalProps {
@@ -98,10 +99,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setIsNewArrival(true);
       setIsTrending(false);
       setIsBestSeller(false);
-      setImages([
-        { url: 'https://picsum.photos/seed/new-prod-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/new-prod-2/800/800', sortOrder: 1 },
-      ]);
+      setImages([{ url: '', sortOrder: 0 }]);
       setColors([
         { name: 'Black', hexCode: '#000000' },
         { name: 'White', hexCode: '#FFFFFF' },
@@ -415,33 +413,36 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               onClick={addImageRow}
               className="text-xs font-semibold text-[#6C63FF] hover:underline flex items-center gap-1 cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Image
+              <Plus className="w-3.5 h-3.5" /> Add Image Slot
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {images.map((img, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <input
-                  type="url"
-                  required
+              <div key={idx} className="relative bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500">Image #{idx + 1}</span>
+                  {images.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeImageRow(idx)}
+                      className="text-gray-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
+                      title="Remove image slot"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <ImageUploadField
                   value={img.url}
-                  onChange={(e) => {
+                  folder="products"
+                  onChange={(newUrl) => {
                     const newImgs = [...images];
-                    newImgs[idx].url = e.target.value;
+                    newImgs[idx].url = newUrl;
                     setImages(newImgs);
                   }}
-                  placeholder="https://picsum.photos/seed/item/800/800"
-                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white"
+                  onRemove={() => removeImageRow(idx)}
                 />
-                <button
-                  type="button"
-                  onClick={() => removeImageRow(idx)}
-                  disabled={images.length === 1}
-                  className="p-2 text-gray-400 hover:text-red-600 disabled:opacity-30 cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
             ))}
           </div>
