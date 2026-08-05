@@ -16,7 +16,6 @@ import '../../cart/application/cart_providers.dart';
 import '../../orders/application/order_providers.dart';
 import '../../settings/application/settings_providers.dart';
 import '../application/checkout_providers.dart';
-import '../data/delivery_method.dart';
 import '../data/payment_method.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {

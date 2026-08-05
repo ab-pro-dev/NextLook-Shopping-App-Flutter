@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../application/address_providers.dart';
-import '../data/address_model.dart';
 import 'address_form_bottom_sheet.dart';
 
 class AddressSelectionBottomSheet extends ConsumerWidget {
