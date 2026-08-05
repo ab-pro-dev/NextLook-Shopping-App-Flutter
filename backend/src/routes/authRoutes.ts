@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { googleAuth, refresh, me, updateProfile, changePassword, adminLogin, adminSetInitialPassword } from '../controllers/authController';
+import { googleAuth, refresh, me, updateProfile, changePassword, adminLogin } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -7,9 +7,8 @@ const router = Router();
 // Google Authentication (Mobile app customer sign-in)
 router.post('/google', googleAuth);
 
-// Admin Email/Password Authentication & Initial Setup
+// Admin Email/Password Authentication
 router.post('/admin-login', adminLogin);
-router.post('/admin-set-initial-password', adminSetInitialPassword);
 
 // Token management & session check
 router.post('/refresh', refresh);

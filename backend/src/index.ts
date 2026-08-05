@@ -15,13 +15,56 @@ import settingsRoutes from './routes/settingsRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import bannerRoutes from './routes/bannerRoutes';
 
+import rateLimit from 'express-rate-limit';
+
 const systemPort = process.env.PORT;
 dotenv.config();
 
 const app = express();
 const port = systemPort ? parseInt(systemPort, 10) : (process.env.PORT ? parseInt(process.env.PORT, 10) : 3000);
 
-app.use(cors());
+// Explicit CORS allowlist
+const allowedOrigins = [
+  'https://nextlook-admin-dashboard.onrender.com',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map((s) => s.trim()) : []),
+];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. native mobile app, curl, Postman) or matched allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS request blocked: origin not allowed'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+
+// Rate limiters to prevent brute force and API abuse
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // limit each IP to 15 auth requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many login/auth requests from this IP. Please try again after 15 minutes.' },
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // limit each IP to 200 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests from this IP. Please try again later.' },
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,8 +76,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/auth', authRoutes);
+// Apply rate limiters & mount auth routes
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/auth', authLimiter, authRoutes);
+app.use('/api', apiLimiter);
 
 app.use('/api/banners', bannerRoutes);
 app.use('/banners', bannerRoutes);
