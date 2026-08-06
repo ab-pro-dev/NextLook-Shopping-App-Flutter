@@ -17,7 +17,19 @@ const productQuerySchema = z.object({
   limit: z.coerce.number().int().min(1, 'limit must be a positive integer').max(100).optional().default(20),
 });
 
-export function formatProductCard(p: any) {
+export function resolveImageUrl(url: string | null | undefined, req?: Request): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (req) {
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    const host = req.headers['x-forwarded-host'] || req.get('host') || 'nextlook-shopping-app-flutter.onrender.com';
+    return `${protocol}://${host}${url.startsWith('/') ? '' : '/'}${url}`;
+  }
+  return `https://nextlook-shopping-app-flutter.onrender.com${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+export function formatProductCard(p: any, req?: Request) {
+  const rawUrl = p.images && p.images.length > 0 ? p.images[0].url : null;
   return {
     id: p.id,
     name: p.name,
@@ -26,7 +38,7 @@ export function formatProductCard(p: any) {
     discountPrice: p.discountPrice !== null ? Number(p.discountPrice) : null,
     rating: p.rating,
     reviewCount: p.reviewCount,
-    thumbnailUrl: p.images && p.images.length > 0 ? p.images[0].url : null,
+    thumbnailUrl: resolveImageUrl(rawUrl, req),
     isFlashSale: p.isFlashSale,
   };
 }
@@ -141,7 +153,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     const totalPages = Math.ceil(total / limit);
 
     res.json({
-      products: items.map(formatProductCard),
+      products: items.map((item) => formatProductCard(item, req)),
       total,
       page,
       totalPages,
@@ -152,7 +164,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const getHomeSections = async (_req: Request, res: Response): Promise<void> => {
+export const getHomeSections = async (req: Request, res: Response): Promise<void> => {
   try {
     const cardInclude = {
       images: {
@@ -189,10 +201,10 @@ export const getHomeSections = async (_req: Request, res: Response): Promise<voi
     ]);
 
     res.json({
-      flashSale: flashSaleItems.map(formatProductCard),
-      newArrivals: newArrivalItems.map(formatProductCard),
-      trending: trendingItems.map(formatProductCard),
-      bestSellers: bestSellerItems.map(formatProductCard),
+      flashSale: flashSaleItems.map((item) => formatProductCard(item, req)),
+      newArrivals: newArrivalItems.map((item) => formatProductCard(item, req)),
+      trending: trendingItems.map((item) => formatProductCard(item, req)),
+      bestSellers: bestSellerItems.map((item) => formatProductCard(item, req)),
     });
   } catch (error) {
     console.error('Error fetching home sections:', error);
@@ -258,7 +270,7 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
       reviewCount: product.reviewCount,
       images: product.images.map((img: { id: string; url: string; sortOrder: number }) => ({
         id: img.id,
-        url: img.url,
+        url: resolveImageUrl(img.url, req),
         sortOrder: img.sortOrder,
       })),
       colors: product.colors,

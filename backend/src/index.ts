@@ -76,8 +76,12 @@ const apiLimiter = rateLimit({
   message: { message: 'Too many requests from this IP. Please try again later.' },
 });
 
+import path from 'path';
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
+app.use('/api/images', express.static(path.join(__dirname, '../public/images')));
 
 app.get('/', (_req, res) => {
   res.json({ status: 'ok', service: 'NextLook Backend' });

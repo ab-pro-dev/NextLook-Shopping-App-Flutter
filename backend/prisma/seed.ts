@@ -104,9 +104,8 @@ async function main() {
       isTrending: true,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/biker-jacket-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/biker-jacket-2/800/800', sortOrder: 1 },
-        { url: 'https://picsum.photos/seed/biker-jacket-3/800/800', sortOrder: 2 },
+        { url: '/images/biker-jacket-1.jpg', sortOrder: 0 },
+        { url: '/images/biker-jacket-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Black', hexCode: '#000000' },
@@ -136,8 +135,8 @@ async function main() {
       isTrending: true,
       isBestSeller: false,
       images: [
-        { url: 'https://picsum.photos/seed/oversized-hoodie-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/oversized-hoodie-2/800/800', sortOrder: 1 },
+        { url: '/images/oversized-hoodie-1.jpg', sortOrder: 0 },
+        { url: '/images/oversized-hoodie-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Navy', hexCode: '#1E1E2D' },
@@ -168,8 +167,8 @@ async function main() {
       isTrending: false,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/slim-jeans-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/slim-jeans-2/800/800', sortOrder: 1 },
+        { url: '/images/slim-jeans-1.jpg', sortOrder: 0 },
+        { url: '/images/slim-jeans-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Indigo Blue', hexCode: '#1A237E' },
@@ -201,9 +200,8 @@ async function main() {
       isTrending: true,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/trench-coat-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/trench-coat-2/800/800', sortOrder: 1 },
-        { url: 'https://picsum.photos/seed/trench-coat-3/800/800', sortOrder: 2 },
+        { url: '/images/trench-coat-1.jpg', sortOrder: 0 },
+        { url: '/images/trench-coat-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Camel', hexCode: '#C19A6B' },
@@ -233,8 +231,8 @@ async function main() {
       isTrending: true,
       isBestSeller: false,
       images: [
-        { url: 'https://picsum.photos/seed/silk-dress-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/silk-dress-2/800/800', sortOrder: 1 },
+        { url: '/images/silk-dress-1.jpg', sortOrder: 0 },
+        { url: '/images/silk-dress-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Emerald Green', hexCode: '#004D40' },
@@ -265,8 +263,8 @@ async function main() {
       isTrending: false,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/cashmere-sweater-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/cashmere-sweater-2/800/800', sortOrder: 1 },
+        { url: '/images/cashmere-sweater-1.jpg', sortOrder: 0 },
+        { url: '/images/cashmere-sweater-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Cream', hexCode: '#FFFDD0' },
@@ -299,8 +297,8 @@ async function main() {
       isTrending: true,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/kids-puffer-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/kids-puffer-2/800/800', sortOrder: 1 },
+        { url: '/images/kids-puffer-1.jpg', sortOrder: 0 },
+        { url: '/images/kids-puffer-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Sunshine Yellow', hexCode: '#FBC02D' },
@@ -329,8 +327,8 @@ async function main() {
       isTrending: false,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/kids-tee-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/kids-tee-2/800/800', sortOrder: 1 },
+        { url: '/images/kids-tee-1.jpg', sortOrder: 0 },
+        { url: '/images/kids-tee-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Multi-Color', hexCode: '#FF7043' },
@@ -361,9 +359,8 @@ async function main() {
       isTrending: true,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/retro-sneaker-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/retro-sneaker-2/800/800', sortOrder: 1 },
-        { url: 'https://picsum.photos/seed/retro-sneaker-3/800/800', sortOrder: 2 },
+        { url: '/images/retro-sneaker-1.jpg', sortOrder: 0 },
+        { url: '/images/retro-sneaker-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'White & Red', hexCode: '#E53935' },
@@ -393,8 +390,8 @@ async function main() {
       isTrending: true,
       isBestSeller: false,
       images: [
-        { url: 'https://picsum.photos/seed/running-shoe-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/running-shoe-2/800/800', sortOrder: 1 },
+        { url: '/images/running-shoe-1.jpg', sortOrder: 0 },
+        { url: '/images/running-shoe-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Neon Orange', hexCode: '#FF6D00' },
@@ -426,8 +423,8 @@ async function main() {
       isTrending: true,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/chrono-watch-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/chrono-watch-2/800/800', sortOrder: 1 },
+        { url: '/images/chrono-watch-1.jpg', sortOrder: 0 },
+        { url: '/images/chrono-watch-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Silver & Navy', hexCode: '#1A237E' },
@@ -454,8 +451,8 @@ async function main() {
       isTrending: false,
       isBestSeller: true,
       images: [
-        { url: 'https://picsum.photos/seed/aviator-sunglasses-1/800/800', sortOrder: 0 },
-        { url: 'https://picsum.photos/seed/aviator-sunglasses-2/800/800', sortOrder: 1 },
+        { url: '/images/aviator-sunglasses-1.jpg', sortOrder: 0 },
+        { url: '/images/aviator-sunglasses-2.jpg', sortOrder: 1 },
       ],
       colors: [
         { name: 'Gold & Dark Green', hexCode: '#2E7D32' },
