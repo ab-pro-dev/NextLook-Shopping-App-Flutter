@@ -22,7 +22,29 @@ import {
   ChevronLeft,
   ChevronRight,
   GripVertical,
+  Check,
 } from 'lucide-react';
+
+export const PRESET_COLORS: { name: string; hexCode: string }[] = [
+  { name: 'Black', hexCode: '#000000' },
+  { name: 'White', hexCode: '#FFFFFF' },
+  { name: 'Blue', hexCode: '#2563EB' },
+  { name: 'Navy', hexCode: '#1E3A8A' },
+  { name: 'Red', hexCode: '#DC2626' },
+  { name: 'Green', hexCode: '#16A34A' },
+  { name: 'Olive', hexCode: '#4D5D28' },
+  { name: 'Grey', hexCode: '#6B7280' },
+  { name: 'Charcoal', hexCode: '#374151' },
+  { name: 'Brown', hexCode: '#78350F' },
+  { name: 'Beige', hexCode: '#E5DCC3' },
+  { name: 'Khaki', hexCode: '#C3B091' },
+  { name: 'Pink', hexCode: '#EC4899' },
+  { name: 'Purple', hexCode: '#8B5CF6' },
+  { name: 'Orange', hexCode: '#F97316' },
+  { name: 'Yellow', hexCode: '#EAB308' },
+  { name: 'Maroon', hexCode: '#800020' },
+  { name: 'Teal', hexCode: '#0D9488' },
+];
 
 interface ProductFormModalProps {
   product?: AdminProduct | null;
@@ -233,8 +255,36 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
   };
 
+  const togglePresetColor = (preset: { name: string; hexCode: string }) => {
+    const existingIndex = colors.findIndex(
+      (c) =>
+        c.name.trim().toLowerCase() === preset.name.toLowerCase() ||
+        c.hexCode.trim().toLowerCase() === preset.hexCode.toLowerCase()
+    );
+
+    if (existingIndex >= 0) {
+      if (colors.length > 1) {
+        setColors(colors.filter((_, i) => i !== existingIndex));
+      }
+    } else {
+      setColors([...colors, { name: preset.name, hexCode: preset.hexCode }]);
+    }
+  };
+
   const addColorRow = () => {
-    setColors([...colors, { name: 'Blue', hexCode: '#0000FF' }]);
+    const unused = PRESET_COLORS.find(
+      (p) =>
+        !colors.some(
+          (c) =>
+            c.name.trim().toLowerCase() === p.name.toLowerCase() ||
+            c.hexCode.trim().toLowerCase() === p.hexCode.toLowerCase()
+        )
+    );
+    if (unused) {
+      setColors([...colors, { name: unused.name, hexCode: unused.hexCode }]);
+    } else {
+      setColors([...colors, { name: '', hexCode: '#6C63FF' }]);
+    }
   };
   const removeColorRow = (index: number) => {
     if (colors.length === 1) return;
@@ -736,19 +786,71 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </button>
           </div>
 
+          {/* Quick Color Presets */}
+          <div className="p-3 bg-gray-50/90 rounded-xl border border-gray-100 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-gray-700">Quick Color Options</span>
+              <span className="text-[10px] text-gray-400">Click to add or remove</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+              {PRESET_COLORS.map((preset) => {
+                const isSelected = colors.some(
+                  (c) =>
+                    c.name.trim().toLowerCase() === preset.name.toLowerCase() ||
+                    c.hexCode.trim().toLowerCase() === preset.hexCode.toLowerCase()
+                );
+                return (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => togglePresetColor(preset)}
+                    title={`${preset.name} (${preset.hexCode})`}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-purple-50/80 border-[#6C63FF] text-[#6C63FF] font-semibold shadow-xs'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-black/15 shrink-0 inline-block"
+                      style={{ backgroundColor: preset.hexCode }}
+                    />
+                    <span>{preset.name}</span>
+                    {isSelected && <Check className="w-3 h-3 text-[#6C63FF] shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Datalist for autocomplete */}
+          <datalist id="preset-colors-list">
+            {PRESET_COLORS.map((p) => (
+              <option key={p.name} value={p.name} />
+            ))}
+          </datalist>
+
           <div className="space-y-2">
             {colors.map((col, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 <input
                   type="text"
                   required
+                  list="preset-colors-list"
                   value={col.name}
                   onChange={(e) => {
+                    const val = e.target.value;
+                    const matched = PRESET_COLORS.find(
+                      (p) => p.name.toLowerCase() === val.trim().toLowerCase()
+                    );
                     const newCols = [...colors];
-                    newCols[idx].name = e.target.value;
+                    newCols[idx].name = val;
+                    if (matched) {
+                      newCols[idx].hexCode = matched.hexCode;
+                    }
                     setColors(newCols);
                   }}
-                  placeholder="Color Name (e.g. Navy)"
+                  placeholder="Color Name (e.g. Navy, Olive)"
                   className="w-1/2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6C63FF]"
                 />
                 <div className="flex items-center gap-2 w-1/2">
