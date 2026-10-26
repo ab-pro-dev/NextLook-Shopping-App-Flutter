@@ -21,20 +21,6 @@ class CartScreen extends ConsumerWidget {
     const backgroundColor = Color(0xFFF8F9FC);
     const discountPink = Color(0xFFFF6584);
 
-    final authState = ref.watch(authControllerProvider);
-    if (authState is! AuthAuthenticated) {
-      return Scaffold(
-        backgroundColor: backgroundColor,
-        body: const SafeArea(
-          child: SignInRequiredView(
-            title: 'Sign In Required',
-            message: 'Sign in to see your cart and complete checkout.',
-            icon: Icons.shopping_bag_outlined,
-          ),
-        ),
-      );
-    }
-
     final cartAsync = ref.watch(cartProvider);
 
     return Scaffold(
@@ -478,6 +464,22 @@ class CartScreen extends ConsumerWidget {
                                     );
                                     return;
                                   }
+
+                                  final authState = ref.read(authControllerProvider);
+                                  if (authState is! AuthAuthenticated) {
+                                    ensureAuthenticated(
+                                      context,
+                                      ref,
+                                      message: 'Sign in to complete checkout.',
+                                      onAuthenticated: () async {
+                                        if (context.mounted) {
+                                          context.push('/checkout');
+                                        }
+                                      },
+                                    );
+                                    return;
+                                  }
+
                                   context.push('/checkout');
                                 },
                                 style: ElevatedButton.styleFrom(

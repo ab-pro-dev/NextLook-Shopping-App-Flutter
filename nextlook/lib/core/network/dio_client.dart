@@ -5,8 +5,11 @@ import 'api_exception.dart';
 /// Configured Dio HTTP client with automatic token attachment, refresh interceptor,
 /// and typed error handling via [ApiException].
 class DioClient {
-  /// Public backend URL hosted on Render.
-  static const String defaultBaseUrl = 'https://nextlook-shopping-app-flutter.onrender.com';
+  /// Public backend URL hosted on Render (customizable via --dart-define=API_BASE_URL=...).
+  static const String defaultBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://nextlook-shopping-app-flutter.onrender.com',
+  );
 
   final Dio _dio;
   final TokenStorage _tokenStorage;

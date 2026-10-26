@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/product_card.dart';
-import '../../../core/widgets/sign_in_required_view.dart';
 import '../../../core/widgets/success_toast.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../cart/application/cart_providers.dart';
@@ -77,57 +76,56 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       return;
     }
 
-    await ensureAuthenticated(
-      context,
-      ref,
-      message: 'Sign in to add items to your cart.',
-      onAuthenticated: () async {
-        try {
-          await ref.read(cartProvider.notifier).addToCart(
-            productId: widget.productId,
-            colorName: _selectedColor!.name,
-            sizeLabel: _selectedSize!.label,
-            quantity: 1,
-          );
-          if (mounted) {
-            final product = ref.read(productDetailProvider(widget.productId)).valueOrNull;
-            final productName = product?.name ?? 'Item';
-            final router = GoRouter.maybeOf(context);
+    final product = ref.read(productDetailProvider(widget.productId)).valueOrNull;
 
-            AppToast.show(
-              context,
-              title: 'Added to Cart',
-              subtitle: productName,
-              actionLabel: 'View Cart',
-              onActionTap: () {
-                if (router != null) {
-                  router.go('/cart');
-                } else if (context.mounted) {
-                  try {
-                    context.go('/cart');
-                  } catch (_) {
-                    Navigator.of(context).pushNamed('/cart');
-                  }
-                }
-              },
-            );
-          }
-        } on ApiException catch (e) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).removeCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(e.message, style: GoogleFonts.poppins()),
-                backgroundColor: Colors.redAccent,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          }
-        } catch (e, st) {
-          debugPrint('[ADD TO CART UNCAUGHT ERROR]: $e\n$st');
-        }
-      },
-    );
+    try {
+      await ref.read(cartProvider.notifier).addToCart(
+        productId: widget.productId,
+        colorName: _selectedColor!.name,
+        sizeLabel: _selectedSize!.label,
+        quantity: 1,
+        name: product?.name,
+        brand: product?.brand,
+        thumbnailUrl: product?.images.isNotEmpty == true ? product!.images.first.url : null,
+        price: product?.price,
+        discountPrice: product?.discountPrice,
+      );
+      if (mounted) {
+        final productName = product?.name ?? 'Item';
+        final router = GoRouter.maybeOf(context);
+
+        AppToast.show(
+          context,
+          title: 'Added to Cart',
+          subtitle: productName,
+          actionLabel: 'View Cart',
+          onActionTap: () {
+            if (router != null) {
+              router.go('/cart');
+            } else if (context.mounted) {
+              try {
+                context.go('/cart');
+              } catch (_) {
+                Navigator.of(context).pushNamed('/cart');
+              }
+            }
+          },
+        );
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message, style: GoogleFonts.poppins()),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e, st) {
+      debugPrint('[ADD TO CART UNCAUGHT ERROR]: $e\n$st');
+    }
   }
 
   @override
@@ -252,39 +250,35 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                             size: 22,
                                           ),
                                           onPressed: () async {
-                                            await ensureAuthenticated(
-                                              context,
-                                              ref,
-                                              message: 'Sign in to add "${product.name}" to your wishlist.',
-                                              onAuthenticated: () async {
-                                                setState(() {
-                                                  _isWishlisted = !_isWishlisted;
-                                                });
-                                                final card = ProductCard(
-                                                  id: product.id,
-                                                  name: product.name,
-                                                  brand: product.brand,
-                                                  price: product.price,
-                                                  discountPrice: product.discountPrice,
-                                                  rating: product.rating,
-                                                  reviewCount: product.reviewCount,
-                                                  thumbnailUrl: product.images.isNotEmpty ? product.images.first.url : null,
-                                                  isFlashSale: product.isFlashSale,
-                                                );
-                                                try {
-                                                  await ref.read(wishlistNotifierProvider.notifier).toggleWishlist(card);
-                                                } catch (_) {
-                                                  if (context.mounted) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text('Failed to update wishlist', style: GoogleFonts.poppins()),
-                                                        backgroundColor: Colors.redAccent,
-                                                      ),
-                                                    );
-                                                  }
-                                                }
-                                              },
+                                            setState(() {
+                                              _isWishlisted = !_isWishlisted;
+                                            });
+                                            final card = ProductCard(
+                                              id: product.id,
+                                              name: product.name,
+                                              brand: product.brand,
+                                              price: product.price,
+                                              discountPrice: product.discountPrice,
+                                              rating: product.rating,
+                                              reviewCount: product.reviewCount,
+                                              thumbnailUrl: product.images.isNotEmpty ? product.images.first.url : null,
+                                              isFlashSale: product.isFlashSale,
                                             );
+                                            try {
+                                              await ref.read(wishlistNotifierProvider.notifier).toggleWishlist(card);
+                                            } catch (_) {
+                                              setState(() {
+                                                _isWishlisted = !_isWishlisted;
+                                              });
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Failed to update wishlist', style: GoogleFonts.poppins()),
+                                                    backgroundColor: Colors.redAccent,
+                                                  ),
+                                                );
+                                              }
+                                            }
                                           },
                                         ),
                                       );

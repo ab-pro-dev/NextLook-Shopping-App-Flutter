@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/application/auth_providers.dart';
 import '../../products/data/product_card_model.dart';
 import '../data/wishlist_repository.dart';
+import '../data/local_wishlist_store.dart';
 
 class WishlistState {
   final List<ProductCard> items;
@@ -30,67 +31,93 @@ final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
 });
 
 class WishlistNotifier extends AsyncNotifier<WishlistState> {
+  late final LocalWishlistStore _localStore;
+
   @override
   Future<WishlistState> build() async {
     final authState = ref.watch(authControllerProvider);
-    if (authState is! AuthAuthenticated) {
-      return const WishlistState(items: [], wishlistedIds: {});
-    }
+    _localStore = ref.watch(localWishlistStoreProvider);
 
-    final repository = ref.read(wishlistRepositoryProvider);
-    final items = await repository.getWishlist();
-    final ids = items.map((p) => p.id).toSet();
-    return WishlistState(items: items, wishlistedIds: ids);
-  }
-
-  /// Refreshes the wishlist from the backend API.
-  Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    if (authState is AuthAuthenticated) {
       final repository = ref.read(wishlistRepositoryProvider);
       final items = await repository.getWishlist();
       final ids = items.map((p) => p.id).toSet();
       return WishlistState(items: items, wishlistedIds: ids);
+    } else {
+      final items = await _localStore.getWishlist();
+      final ids = items.map((p) => p.id).toSet();
+      return WishlistState(items: items, wishlistedIds: ids);
+    }
+  }
+
+  /// Refreshes the wishlist from the backend API or local store.
+  Future<void> refresh() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final authState = ref.read(authControllerProvider);
+      if (authState is AuthAuthenticated) {
+        final repository = ref.read(wishlistRepositoryProvider);
+        final items = await repository.getWishlist();
+        final ids = items.map((p) => p.id).toSet();
+        return WishlistState(items: items, wishlistedIds: ids);
+      } else {
+        final items = await _localStore.getWishlist();
+        final ids = items.map((p) => p.id).toSet();
+        return WishlistState(items: items, wishlistedIds: ids);
+      }
     });
   }
 
   /// Toggles wishlist status for a given [ProductCard].
-  /// Performs an optimistic update immediately, rolling back on failure.
+  /// Performs an optimistic update immediately, rolling back on failure for authenticated users.
   Future<bool> toggleWishlist(ProductCard product) async {
-    final previousState = state.valueOrNull;
-    if (previousState == null) return false;
+    final authState = ref.read(authControllerProvider);
 
-    final isCurrentlyWishlisted = previousState.isWishlisted(product.id);
+    if (authState is AuthAuthenticated) {
+      final previousState = state.valueOrNull;
+      if (previousState == null) return false;
 
-    // Prepare optimistic state
-    final newIds = Set<String>.from(previousState.wishlistedIds);
-    final newItems = List<ProductCard>.from(previousState.items);
+      final isCurrentlyWishlisted = previousState.isWishlisted(product.id);
 
-    if (isCurrentlyWishlisted) {
-      newIds.remove(product.id);
-      newItems.removeWhere((item) => item.id == product.id);
-    } else {
-      newIds.add(product.id);
-      newItems.insert(0, product);
-    }
+      // Prepare optimistic state
+      final newIds = Set<String>.from(previousState.wishlistedIds);
+      final newItems = List<ProductCard>.from(previousState.items);
 
-    // Apply optimistic update
-    state = AsyncValue.data(
-      WishlistState(items: newItems, wishlistedIds: newIds),
-    );
-
-    try {
-      final repository = ref.read(wishlistRepositoryProvider);
       if (isCurrentlyWishlisted) {
-        await repository.removeFromWishlist(product.id);
+        newIds.remove(product.id);
+        newItems.removeWhere((item) => item.id == product.id);
       } else {
-        await repository.addToWishlist(product.id);
+        newIds.add(product.id);
+        newItems.insert(0, product);
       }
-      return !isCurrentlyWishlisted;
-    } catch (error) {
-      // Rollback on failure
-      state = AsyncValue.data(previousState);
-      rethrow;
+
+      // Apply optimistic update
+      state = AsyncValue.data(
+        WishlistState(items: newItems, wishlistedIds: newIds),
+      );
+
+      try {
+        final repository = ref.read(wishlistRepositoryProvider);
+        if (isCurrentlyWishlisted) {
+          await repository.removeFromWishlist(product.id);
+        } else {
+          await repository.addToWishlist(product.id);
+        }
+        return !isCurrentlyWishlisted;
+      } catch (error) {
+        // Rollback on failure
+        state = AsyncValue.data(previousState);
+        rethrow;
+      }
+    } else {
+      // Local store for guests:
+      final isNowWishlisted = await _localStore.toggleWishlist(product);
+      final items = await _localStore.getWishlist();
+      final ids = items.map((p) => p.id).toSet();
+      state = AsyncValue.data(
+        WishlistState(items: items, wishlistedIds: ids),
+      );
+      return isNowWishlisted;
     }
   }
 }

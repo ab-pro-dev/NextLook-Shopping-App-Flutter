@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nextlook/core/network/dio_client.dart';
 import 'package:nextlook/features/products/presentation/categories_list_screen.dart';
 import 'package:nextlook/features/products/presentation/category_products_screen.dart';
 import 'package:nextlook/features/products/presentation/product_detail_screen.dart';

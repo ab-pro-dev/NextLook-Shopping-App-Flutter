@@ -34,6 +34,11 @@ class FakeCartNotifier extends CartNotifier {
     required String colorName,
     required String sizeLabel,
     required int quantity,
+    String? name,
+    String? brand,
+    String? thumbnailUrl,
+    double? price,
+    double? discountPrice,
   }) async {
     state = const AsyncValue.data(
       CartSummary(items: [], subtotal: 7500, itemCount: 1),

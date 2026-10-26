@@ -4,14 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextlook/features/auth/application/auth_providers.dart';
 import 'package:nextlook/features/auth/data/auth_repository.dart';
-import 'package:nextlook/features/auth/presentation/splash_screen.dart';
 import 'package:nextlook/features/wishlist/presentation/wishlist_screen.dart';
+import 'package:nextlook/features/wishlist/application/wishlist_providers.dart';
 import 'package:nextlook/features/cart/presentation/cart_screen.dart';
 import 'package:nextlook/features/profile/profile_screen.dart';
 import 'package:nextlook/core/widgets/product_card.dart';
 import 'package:nextlook/features/products/data/product_card_model.dart';
 import 'package:nextlook/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:nextlook/core/utils/onboarding_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FakeGuestAuthController extends AuthController {
@@ -38,7 +37,8 @@ void main() {
   );
 
   group('Guest Access & Auth Guard Widget Tests', () {
-    testWidgets('WishlistScreen shows SignInRequiredView for guest user', (tester) async {
+    testWidgets('WishlistScreen shows wishlist for guest user (no sign-in guard)', (tester) async {
+      SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -51,12 +51,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Sign In Required'), findsOneWidget);
-      expect(find.text('Sign in to see your wishlist and saved items.'), findsOneWidget);
-      expect(find.byKey(const Key('google_sign_in_button')), findsOneWidget);
+      expect(find.text('Wishlist'), findsOneWidget);
+      expect(find.text('Your wishlist is empty'), findsOneWidget);
+      expect(find.text('Sign In Required'), findsNothing);
     });
 
-    testWidgets('CartScreen shows SignInRequiredView for guest user', (tester) async {
+    testWidgets('CartScreen shows cart for guest user (no sign-in guard)', (tester) async {
+      SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -69,9 +70,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Sign In Required'), findsOneWidget);
-      expect(find.text('Sign in to see your cart and complete checkout.'), findsOneWidget);
-      expect(find.byKey(const Key('google_sign_in_button')), findsOneWidget);
+      expect(find.text('Cart'), findsOneWidget);
+      expect(find.text('Your cart is empty'), findsOneWidget);
+      expect(find.text('Sign In Required'), findsNothing);
     });
 
     testWidgets('ProfileScreen shows SignInRequiredView for guest user', (tester) async {
@@ -92,12 +93,17 @@ void main() {
       expect(find.byKey(const Key('google_sign_in_button')), findsOneWidget);
     });
 
-    testWidgets('ProductCard heart tap triggers Sign In Required modal bottom sheet for guest', (tester) async {
+    testWidgets('ProductCard heart tap toggles wishlist for guest without sign-in modal', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      late ProviderContainer container;
+
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            authControllerProvider.overrideWith((ref) => FakeGuestAuthController()),
-          ],
+        UncontrolledProviderScope(
+          container: container = ProviderContainer(
+            overrides: [
+              authControllerProvider.overrideWith((ref) => FakeGuestAuthController()),
+            ],
+          ),
           child: const MaterialApp(
             home: Scaffold(
               body: ProductCardWidget(product: sampleProduct),
@@ -113,10 +119,13 @@ void main() {
       await tester.tap(heartBtn);
       await tester.pumpAndSettle();
 
-      // Modal bottom sheet should pop up with Sign In prompt
-      expect(find.text('Sign In Required'), findsOneWidget);
-      expect(find.text('Sign in to add items to your wishlist.'), findsOneWidget);
-      expect(find.byKey(const Key('google_sign_in_modal_button')), findsOneWidget);
+      // Modal bottom sheet should NOT pop up
+      expect(find.text('Sign In Required'), findsNothing);
+      expect(find.byKey(const Key('google_sign_in_modal_button')), findsNothing);
+
+      // Wishlist state should have prod-1
+      final wishlistState = container.read(wishlistNotifierProvider).valueOrNull;
+      expect(wishlistState?.isWishlisted('prod-1'), isTrue);
     });
 
     testWidgets('OnboardingScreen Skip tap marks onboarding seen and routes to /home', (tester) async {

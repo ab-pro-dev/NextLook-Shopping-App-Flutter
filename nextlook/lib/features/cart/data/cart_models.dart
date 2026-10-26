@@ -43,6 +43,53 @@ class CartItem {
       inStock: json['inStock'] as bool? ?? true,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'productId': productId,
+      'name': name,
+      'brand': brand,
+      'thumbnailUrl': thumbnailUrl,
+      'price': price,
+      'discountPrice': discountPrice,
+      'colorName': colorName,
+      'sizeLabel': sizeLabel,
+      'quantity': quantity,
+      'lineTotal': lineTotal,
+      'inStock': inStock,
+    };
+  }
+
+  CartItem copyWith({
+    String? id,
+    String? productId,
+    String? name,
+    String? brand,
+    String? thumbnailUrl,
+    double? price,
+    double? discountPrice,
+    String? colorName,
+    String? sizeLabel,
+    int? quantity,
+    double? lineTotal,
+    bool? inStock,
+  }) {
+    return CartItem(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      name: name ?? this.name,
+      brand: brand ?? this.brand,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      price: price ?? this.price,
+      discountPrice: discountPrice ?? this.discountPrice,
+      colorName: colorName ?? this.colorName,
+      sizeLabel: sizeLabel ?? this.sizeLabel,
+      quantity: quantity ?? this.quantity,
+      lineTotal: lineTotal ?? this.lineTotal,
+      inStock: inStock ?? this.inStock,
+    );
+  }
 }
 
 class CartSummary {

@@ -7,7 +7,6 @@ import '../../../core/widgets/sign_in_required_view.dart';
 import 'widgets/notification_skeletons.dart';
 import '../../auth/application/auth_providers.dart';
 import '../application/notification_providers.dart';
-import '../data/notification_model.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
