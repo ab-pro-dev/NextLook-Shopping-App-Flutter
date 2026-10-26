@@ -8,7 +8,21 @@ import {
   uploadMultipleAdminImages,
 } from '../services/api';
 import { ImageUploadField } from './ImageUploadField';
-import { X, Plus, Trash2, Loader2, AlertCircle, Image as ImageIcon, Palette, Ruler, Upload } from 'lucide-react';
+import {
+  X,
+  Plus,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  Image as ImageIcon,
+  Palette,
+  Ruler,
+  Upload,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  GripVertical,
+} from 'lucide-react';
 
 interface ProductFormModalProps {
   product?: AdminProduct | null;
@@ -58,6 +72,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   const [batchUploading, setBatchUploading] = useState(false);
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const multiFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -126,7 +141,40 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   };
   const removeImageRow = (index: number) => {
     if (images.length === 1) return;
-    setImages(images.filter((_, i) => i !== index));
+    const filtered = images.filter((_, i) => i !== index);
+    setImages(filtered.map((img, i) => ({ ...img, sortOrder: i })));
+  };
+
+  const swapImages = (indexA: number, indexB: number) => {
+    if (indexA < 0 || indexA >= images.length || indexB < 0 || indexB >= images.length) return;
+    const newImgs = [...images];
+    const temp = newImgs[indexA];
+    newImgs[indexA] = newImgs[indexB];
+    newImgs[indexB] = temp;
+    setImages(newImgs.map((img, i) => ({ ...img, sortOrder: i })));
+  };
+
+  const setAsMainImage = (index: number) => {
+    if (index <= 0 || index >= images.length) return;
+    const target = images[index];
+    const remaining = images.filter((_, i) => i !== index);
+    const newImgs = [target, ...remaining].map((img, i) => ({ ...img, sortOrder: i }));
+    setImages(newImgs);
+  };
+
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      fromIndex >= images.length ||
+      toIndex < 0 ||
+      toIndex >= images.length
+    )
+      return;
+    const newImgs = [...images];
+    const [moved] = newImgs.splice(fromIndex, 1);
+    newImgs.splice(toIndex, 0, moved);
+    setImages(newImgs.map((img, i) => ({ ...img, sortOrder: i })));
   };
 
   const handleBatchFiles = async (filesList: FileList | File[]) => {
@@ -546,43 +594,128 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {images.map((img, idx) => (
-              <div key={idx} className="relative bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-500">Image #{idx + 1}</span>
-                  {images.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeImageRow(idx)}
-                      className="text-gray-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
-                      title="Remove image slot"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-                <ImageUploadField
-                  value={img.url}
-                  folder="products"
-                  allowMultiple={true}
-                  onChange={(newUrl) => {
-                    const newImgs = [...images];
-                    newImgs[idx].url = newUrl;
-                    setImages(newImgs);
+            {images.map((img, idx) => {
+              const isMain = idx === 0;
+              const hasUrl = Boolean(img.url.trim());
+
+              return (
+                <div
+                  key={idx}
+                  draggable={hasUrl}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', String(idx));
+                    setDraggedIndex(idx);
                   }}
-                  onMultipleUpload={(additionalUrls) => {
-                    setImages((prev) => {
-                      const copy = [...prev];
-                      additionalUrls.forEach((url) => {
-                        copy.push({ url, sortOrder: copy.length });
+                  onDragEnd={() => setDraggedIndex(null)}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedIndex !== null && draggedIndex !== idx) {
+                      moveImage(draggedIndex, idx);
+                    }
+                    setDraggedIndex(null);
+                  }}
+                  className={`relative p-3 rounded-xl border transition-all space-y-2.5 ${
+                    isMain
+                      ? 'bg-amber-50/40 border-amber-300 ring-2 ring-amber-300/40 shadow-sm'
+                      : 'bg-gray-50 border-gray-200'
+                  } ${draggedIndex === idx ? 'opacity-40 border-dashed border-[#6C63FF]' : ''}`}
+                >
+                  {/* Card Header: Main badge or Set as Main, Move buttons, Trash */}
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-1.5">
+                      {hasUrl && (
+                        <div
+                          className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing p-0.5"
+                          title="Drag to swap or reorder"
+                        >
+                          <GripVertical className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                      {isMain ? (
+                        <span className="px-2 py-0.5 bg-amber-500 text-white font-bold text-[11px] rounded-md flex items-center gap-1 shadow-xs tracking-wide">
+                          <Star className="w-3 h-3 fill-white" /> Main Image
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-semibold text-gray-500">#{idx + 1}</span>
+                          {hasUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setAsMainImage(idx)}
+                              className="text-[11px] font-semibold text-amber-700 bg-amber-100/70 hover:bg-amber-200/80 px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer"
+                              title="Make this the cover/thumbnail image"
+                            >
+                              <Star className="w-3 h-3" /> Set as Main
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action Controls: Swap Left, Swap Right, Delete */}
+                    <div className="flex items-center gap-0.5">
+                      {images.length > 1 && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => swapImages(idx, idx - 1)}
+                            disabled={idx === 0}
+                            className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 disabled:opacity-20 disabled:pointer-events-none transition-colors cursor-pointer"
+                            title="Move image left / earlier"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => swapImages(idx, idx + 1)}
+                            disabled={idx === images.length - 1}
+                            className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 disabled:opacity-20 disabled:pointer-events-none transition-colors cursor-pointer"
+                            title="Move image right / later"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+
+                      {images.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeImageRow(idx)}
+                          className="text-gray-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer ml-0.5"
+                          title="Remove image slot"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <ImageUploadField
+                    value={img.url}
+                    folder="products"
+                    allowMultiple={true}
+                    onChange={(newUrl) => {
+                      const newImgs = [...images];
+                      newImgs[idx].url = newUrl;
+                      setImages(newImgs);
+                    }}
+                    onMultipleUpload={(additionalUrls) => {
+                      setImages((prev) => {
+                        const copy = [...prev];
+                        additionalUrls.forEach((url) => {
+                          copy.push({ url, sortOrder: copy.length });
+                        });
+                        return copy;
                       });
-                      return copy;
-                    });
-                  }}
-                  onRemove={() => removeImageRow(idx)}
-                />
-              </div>
-            ))}
+                    }}
+                    onRemove={() => removeImageRow(idx)}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
 
