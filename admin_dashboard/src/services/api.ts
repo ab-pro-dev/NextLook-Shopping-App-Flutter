@@ -81,7 +81,7 @@ export interface ProductSize {
 export interface AdminProduct {
   id: string;
   name: string;
-  description: string;
+  description?: string | null;
   brand?: string | null;
   categoryId: string;
   categoryName: string;
@@ -115,7 +115,7 @@ export interface Category {
 
 export interface ProductPayload {
   name: string;
-  description: string;
+  description?: string | null;
   brand?: string | null;
   categoryId: string;
   price: number;

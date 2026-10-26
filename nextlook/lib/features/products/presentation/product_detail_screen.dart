@@ -528,24 +528,26 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ],
 
                           // 5. DESCRIPTION SECTION
-                          Text(
-                            'Description',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: darkNavy,
+                          if (product.description.trim().isNotEmpty) ...[
+                            Text(
+                              'Description',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: darkNavy,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            product.description,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.grey[700],
-                              height: 1.5,
+                            const SizedBox(height: 8),
+                            Text(
+                              product.description,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 28),
+                            const SizedBox(height: 28),
+                          ],
 
                           // 6. SIMILAR PRODUCTS SECTION
                           _buildSimilarProductsSection(ref, product),

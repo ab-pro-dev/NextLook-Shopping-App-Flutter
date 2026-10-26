@@ -5,13 +5,13 @@ import { z } from 'zod';
 // Zod Schema for Product Validation
 export const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
-  description: z.string().min(1, 'Description is required'),
+  description: z.string().trim().nullable().optional(),
   brand: z.string().trim().nullable().optional(),
   categoryId: z.string().uuid('Valid Category ID is required'),
   price: z.number().positive('Price must be greater than 0'),
   discountPrice: z.number().positive('Discount price must be positive').nullable().optional(),
   sku: z.string().min(1, 'SKU is required'),
-  weight: z.number().positive().nullable().optional(),
+  weight: z.number().min(0).nullable().optional(),
   isFlashSale: z.boolean().default(false),
   isNewArrival: z.boolean().default(false),
   isTrending: z.boolean().default(false),
@@ -168,7 +168,7 @@ export async function createAdminProduct(req: Request, res: Response) {
       return tx.product.create({
         data: {
           name: data.name,
-          description: data.description,
+          description: data.description ? data.description.trim() : '',
           brand: data.brand ? data.brand.trim() : null,
           categoryId: data.categoryId,
           price: data.price,
@@ -260,8 +260,8 @@ export async function updateAdminProduct(req: Request, res: Response) {
         where: { id },
         data: {
           name: data.name,
-          description: data.description,
-          brand: data.brand ? data.brand.trim() : null,
+          description: data.description !== undefined ? (data.description ? data.description.trim() : '') : existing.description,
+          brand: data.brand !== undefined ? (data.brand ? data.brand.trim() : null) : existing.brand,
           categoryId: data.categoryId,
           price: data.price,
           discountPrice: data.discountPrice ?? null,

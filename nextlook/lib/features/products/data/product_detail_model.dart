@@ -151,7 +151,7 @@ class ProductDetail {
     return ProductDetail(
       id: json['id'] as String,
       name: json['name'] as String,
-      description: json['description'] as String,
+      description: json['description'] as String? ?? '',
       brand: json['brand'] as String?,
       categoryName: categoryJson['name'] as String? ?? '',
       categorySlug: categoryJson['slug'] as String? ?? '',

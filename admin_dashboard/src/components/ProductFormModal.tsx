@@ -78,7 +78,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   useEffect(() => {
     if (product) {
       setName(product.name);
-      setDescription(product.description);
+      setDescription(product.description || '');
       setBrand(product.brand || '');
       setCategoryId(product.categoryId);
       setPrice(product.price);
@@ -114,7 +114,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setPrice('');
       setDiscountPrice('');
       setSku(`SKU-${Date.now().toString().slice(-6)}`);
-      setWeight(500);
+      setWeight('');
       setIsFlashSale(false);
       setIsNewArrival(true);
       setIsTrending(false);
@@ -255,7 +255,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
     // Basic Validations
     if (!name.trim()) return setError('Product name is required');
-    if (!description.trim()) return setError('Description is required');
     if (!categoryId) return setError('Please select a category');
     if (typeof price !== 'number' || price <= 0) return setError('Price must be greater than 0');
     if (discountPrice !== '' && typeof discountPrice === 'number' && discountPrice >= price) {
@@ -270,7 +269,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
     const payload: ProductPayload = {
       name: name.trim(),
-      description: description.trim(),
+      description: description.trim() || undefined,
       brand: brand.trim() || undefined,
       categoryId,
       price: Number(price),
@@ -385,13 +384,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Description <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
             <textarea
               rows={3}
-              required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Detailed description of materials, fit, and style..."
+              placeholder="Detailed description of materials, fit, and style... (Optional)"
               className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white resize-none"
             />
           </div>
@@ -450,13 +450,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Weight (grams)</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Weight (grams) <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
               <input
                 type="number"
-                min={1}
+                min={0}
                 value={weight}
                 onChange={(e) => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="1250"
+                placeholder="e.g. 500 (Optional)"
                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white"
               />
             </div>
