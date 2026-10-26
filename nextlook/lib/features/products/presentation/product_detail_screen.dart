@@ -465,7 +465,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ],
 
                           // 4. SIZE SELECTOR
-                          if (product.sizes.isNotEmpty) ...[
+                          if (product.sizes.isNotEmpty &&
+                              !(product.sizes.length == 1 &&
+                                  (product.sizes.first.label.toLowerCase() == 'one size' ||
+                                      product.sizes.first.label.toLowerCase() == 'os' ||
+                                      product.sizes.first.label.toLowerCase() == 'standard'))) ...[
                             Text(
                               'Size',
                               style: GoogleFonts.poppins(

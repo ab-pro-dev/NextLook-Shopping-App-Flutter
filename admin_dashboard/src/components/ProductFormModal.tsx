@@ -23,6 +23,7 @@ import {
   ChevronRight,
   GripVertical,
   Check,
+  Package,
 } from 'lucide-react';
 
 export const PRESET_COLORS: { name: string; hexCode: string }[] = [
@@ -88,6 +89,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     { label: 'M', stock: 15 },
     { label: 'L', stock: 10 },
   ]);
+  const [accessoryStock, setAccessoryStock] = useState<number | ''>(25);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,6 +124,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           ? product.colors.map((c) => ({ name: c.name, hexCode: c.hexCode }))
           : [{ name: 'Black', hexCode: '#000000' }]
       );
+      const totalStock = product.sizes.reduce((sum, s) => sum + s.stock, 0);
+      setAccessoryStock(totalStock > 0 ? totalStock : (product.stock ?? 25));
       setSizes(
         product.sizes.length > 0
           ? product.sizes.map((s) => ({ label: s.label, stock: s.stock }))
@@ -137,6 +141,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setDiscountPrice('');
       setSku(`SKU-${Date.now().toString().slice(-6)}`);
       setWeight('');
+      setAccessoryStock(25);
       setIsFlashSale(false);
       setIsNewArrival(true);
       setIsTrending(false);
@@ -156,6 +161,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   }, [product, categories, isOpen]);
 
   if (!isOpen) return null;
+
+  const selectedCategory = categories.find((c) => c.id === categoryId);
+  const isAccessories = Boolean(
+    selectedCategory &&
+      (selectedCategory.slug?.toLowerCase() === 'accessories' ||
+        selectedCategory.name?.toLowerCase().includes('accessories'))
+  );
 
   // Dynamic Item Helpers
   const addImageRow = () => {
@@ -314,8 +326,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     if (images.some((img) => !img.url.trim())) return setError('All image URL fields must be filled');
     if (colors.some((c) => !c.name.trim() || !c.hexCode.trim()))
       return setError('All color fields must be filled');
-    if (sizes.some((s) => !s.label.trim() || s.stock < 0))
-      return setError('All size labels must be filled and stock cannot be negative');
+    if (isAccessories) {
+      if (accessoryStock === '' || typeof accessoryStock !== 'number' || accessoryStock < 0) {
+        return setError('Stock quantity must be 0 or greater');
+      }
+    } else {
+      if (sizes.length === 0 || sizes.some((s) => !s.label.trim() || s.stock < 0)) {
+        return setError('All size labels must be filled and stock cannot be negative');
+      }
+    }
 
     const payload: ProductPayload = {
       name: name.trim(),
@@ -332,7 +351,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       isBestSeller,
       images,
       colors,
-      sizes: sizes.map((s) => ({ label: s.label.trim(), stock: Number(s.stock) })),
+      sizes: isAccessories
+        ? [{ label: 'One Size', stock: Number(accessoryStock) }]
+        : sizes.map((s) => ({ label: s.label.trim(), stock: Number(s.stock) })),
     };
 
     setLoading(true);
@@ -892,58 +913,93 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
         {/* Dynamic Sizes & Stock */}
         <div className="space-y-3 pt-2 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#6C63FF] flex items-center gap-1.5 m-0">
-              <Ruler className="w-4 h-4" /> Sizes & Per-Size Stock ({sizes.length})
-            </h3>
-            <button
-              type="button"
-              onClick={addSizeRow}
-              className="text-xs font-semibold text-[#6C63FF] hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" /> Add Size
-            </button>
-          </div>
+          {isAccessories ? (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#6C63FF] flex items-center gap-1.5 m-0">
+                  <Package className="w-4 h-4" /> Stock Quantity
+                </h3>
+                <span className="text-[11px] bg-purple-50 text-[#6C63FF] font-medium px-2 py-0.5 rounded-md border border-[#6C63FF]/20">
+                  Accessories (No size options)
+                </span>
+              </div>
 
-          <div className="space-y-2">
-            {sizes.map((sz, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  required
-                  value={sz.label}
-                  onChange={(e) => {
-                    const newSizes = [...sizes];
-                    newSizes[idx].label = e.target.value;
-                    setSizes(newSizes);
-                  }}
-                  placeholder="Size (e.g. S, M, 42)"
-                  className="w-1/2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6C63FF]"
-                />
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Available Stock Quantity
+                </label>
                 <input
                   type="number"
                   required
                   min={0}
-                  value={sz.stock}
-                  onChange={(e) => {
-                    const newSizes = [...sizes];
-                    newSizes[idx].stock = Number(e.target.value);
-                    setSizes(newSizes);
-                  }}
-                  placeholder="Stock Quantity"
-                  className="w-1/2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6C63FF]"
+                  value={accessoryStock}
+                  onChange={(e) =>
+                    setAccessoryStock(e.target.value === '' ? '' : Number(e.target.value))
+                  }
+                  placeholder="e.g. 50"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white"
                 />
+                <p className="text-[11px] text-gray-400 mt-1.5">
+                  Accessories do not require size choices. Enter the total stock quantity available.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#6C63FF] flex items-center gap-1.5 m-0">
+                  <Ruler className="w-4 h-4" /> Sizes & Per-Size Stock ({sizes.length})
+                </h3>
                 <button
                   type="button"
-                  onClick={() => removeSizeRow(idx)}
-                  disabled={sizes.length === 1}
-                  className="p-2 text-gray-400 hover:text-red-600 disabled:opacity-30 cursor-pointer"
+                  onClick={addSizeRow}
+                  className="text-xs font-semibold text-[#6C63FF] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" /> Add Size
                 </button>
               </div>
-            ))}
-          </div>
+
+              <div className="space-y-2">
+                {sizes.map((sz, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      required
+                      value={sz.label}
+                      onChange={(e) => {
+                        const newSizes = [...sizes];
+                        newSizes[idx].label = e.target.value;
+                        setSizes(newSizes);
+                      }}
+                      placeholder="Size (e.g. S, M, 42)"
+                      className="w-1/2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6C63FF]"
+                    />
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      value={sz.stock}
+                      onChange={(e) => {
+                        const newSizes = [...sizes];
+                        newSizes[idx].stock = Number(e.target.value);
+                        setSizes(newSizes);
+                      }}
+                      placeholder="Stock Quantity"
+                      className="w-1/2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6C63FF]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSizeRow(idx)}
+                      disabled={sizes.length === 1}
+                      className="p-2 text-gray-400 hover:text-red-600 disabled:opacity-30 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Footer Actions */}
