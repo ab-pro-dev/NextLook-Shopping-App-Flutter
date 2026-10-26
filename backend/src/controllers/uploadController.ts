@@ -109,3 +109,77 @@ export async function deleteImage(req: Request, res: Response) {
     });
   }
 }
+
+/**
+ * Multer middleware for multiple files (up to 10 images, 5MB each).
+ */
+export function uploadMultipleMiddleware(req: Request, res: Response, next: NextFunction) {
+  const upload = multer({
+    storage,
+    limits: {
+      fileSize: 5 * 1024 * 1024,
+    },
+  }).array('images', 10);
+
+  upload(req, res, (err: any) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'One or more files exceed the 5MB limit.' });
+      }
+      return res.status(400).json({ message: `Upload error: ${err.message}` });
+    } else if (err) {
+      return res.status(400).json({ message: err.message || 'File upload failed' });
+    }
+    next();
+  });
+}
+
+/**
+ * POST /api/admin/upload/images
+ * Upload multiple images concurrently to Cloudinary.
+ */
+export async function uploadMultipleImages(req: Request, res: Response) {
+  try {
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: 'No image files provided' });
+    }
+
+    const requestedFolder = (req.body.folder || 'products').toString().toLowerCase().trim();
+    const folder = ALLOWED_FOLDERS.includes(requestedFolder) ? requestedFolder : 'products';
+    const cloudinaryFolder = `nextlook/${folder}`;
+
+    for (const file of files) {
+      if (!ALLOWED_MIMETYPES.includes(file.mimetype)) {
+        return res.status(400).json({
+          message: `Invalid file type for ${file.originalname}. Only JPEG, PNG, and WebP images are allowed.`,
+        });
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        return res.status(400).json({
+          message: `File size exceeds 5MB limit for ${file.originalname}.`,
+        });
+      }
+    }
+
+    const uploadPromises = files.map(async (file) => {
+      const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+      const uploadResult = await cloudinary.uploader.upload(dataUri, {
+        folder: cloudinaryFolder,
+        resource_type: 'image',
+      });
+      return {
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+      };
+    });
+
+    const results = await Promise.all(uploadPromises);
+    return res.status(200).json({ images: results });
+  } catch (error: any) {
+    console.error('Error in uploadMultipleImages controller:', error);
+    return res.status(500).json({
+      message: error.message || 'Failed to upload images to Cloudinary',
+    });
+  }
+}

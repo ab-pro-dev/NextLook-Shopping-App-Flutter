@@ -82,7 +82,7 @@ export interface AdminProduct {
   id: string;
   name: string;
   description: string;
-  brand: string;
+  brand?: string | null;
   categoryId: string;
   categoryName: string;
   categorySlug?: string;
@@ -116,7 +116,7 @@ export interface Category {
 export interface ProductPayload {
   name: string;
   description: string;
-  brand: string;
+  brand?: string | null;
   categoryId: string;
   price: number;
   discountPrice?: number | null;
@@ -452,6 +452,24 @@ export async function uploadAdminImage(file: File, folder: 'avatars' | 'products
   });
 
   return response.data;
+}
+
+export async function uploadMultipleAdminImages(
+  files: File[],
+  folder: 'avatars' | 'products' | 'banners' = 'products',
+  onProgress?: (completed: number, total: number) => void
+): Promise<UploadImageResponse[]> {
+  let completed = 0;
+  const uploadPromises = files.map(async (file) => {
+    const result = await uploadAdminImage(file, folder);
+    completed++;
+    if (onProgress) {
+      onProgress(completed, files.length);
+    }
+    return result;
+  });
+
+  return Promise.all(uploadPromises);
 }
 
 export async function deleteAdminImage(publicId: string): Promise<void> {

@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   type AdminProduct,
   type Category,
   type ProductPayload,
   createAdminProduct,
   updateAdminProduct,
+  uploadMultipleAdminImages,
 } from '../services/api';
 import { ImageUploadField } from './ImageUploadField';
-import { X, Plus, Trash2, Loader2, AlertCircle, Image as ImageIcon, Palette, Ruler } from 'lucide-react';
+import { X, Plus, Trash2, Loader2, AlertCircle, Image as ImageIcon, Palette, Ruler, Upload } from 'lucide-react';
 
 interface ProductFormModalProps {
   product?: AdminProduct | null;
@@ -55,11 +56,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [batchUploading, setBatchUploading] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<string | null>(null);
+  const multiFileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (product) {
       setName(product.name);
       setDescription(product.description);
-      setBrand(product.brand);
+      setBrand(product.brand || '');
       setCategoryId(product.categoryId);
       setPrice(product.price);
       setDiscountPrice(product.discountPrice ?? '');
@@ -124,6 +129,62 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     setImages(images.filter((_, i) => i !== index));
   };
 
+  const handleBatchFiles = async (filesList: FileList | File[]) => {
+    const files = Array.from(filesList);
+    if (files.length === 0) return;
+
+    setError(null);
+
+    // Validate size and type for all files
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`File '${file.name}' exceeds the 5MB limit. Please choose smaller images.`);
+        if (multiFileInputRef.current) multiFileInputRef.current.value = '';
+        return;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        setError(`File '${file.name}' has an unsupported type. Only JPEG, PNG, and WebP are allowed.`);
+        if (multiFileInputRef.current) multiFileInputRef.current.value = '';
+        return;
+      }
+    }
+
+    setBatchUploading(true);
+    setBatchProgress(`Uploading 1 of ${files.length} images...`);
+
+    try {
+      const results = await uploadMultipleAdminImages(
+        files,
+        'products',
+        (done, total) => setBatchProgress(`Uploading ${done} of ${total} images...`)
+      );
+
+      const uploadedUrls = results.map((r) => r.url);
+
+      setImages((prevImages) => {
+        // If the only slot is empty, start fresh with uploadedUrls
+        const nonEmpty = prevImages.filter((img) => img.url.trim() !== '');
+        const newSlots: { url: string; sortOrder: number }[] = [...nonEmpty];
+
+        uploadedUrls.forEach((url) => {
+          newSlots.push({ url, sortOrder: newSlots.length });
+        });
+
+        return newSlots.length > 0 ? newSlots : [{ url: '', sortOrder: 0 }];
+      });
+    } catch (err: any) {
+      console.error('Batch image upload error:', err);
+      const serverMessage =
+        err.response?.data?.message || err.message || 'Failed to upload images. Please try again.';
+      setError(serverMessage);
+    } finally {
+      setBatchUploading(false);
+      setBatchProgress(null);
+      if (multiFileInputRef.current) multiFileInputRef.current.value = '';
+    }
+  };
+
   const addColorRow = () => {
     setColors([...colors, { name: 'Blue', hexCode: '#0000FF' }]);
   };
@@ -147,7 +208,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     // Basic Validations
     if (!name.trim()) return setError('Product name is required');
     if (!description.trim()) return setError('Description is required');
-    if (!brand.trim()) return setError('Brand is required');
     if (!categoryId) return setError('Please select a category');
     if (typeof price !== 'number' || price <= 0) return setError('Price must be greater than 0');
     if (discountPrice !== '' && typeof discountPrice === 'number' && discountPrice >= price) {
@@ -163,7 +223,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     const payload: ProductPayload = {
       name: name.trim(),
       description: description.trim(),
-      brand: brand.trim(),
+      brand: brand.trim() || undefined,
       categoryId,
       price: Number(price),
       discountPrice: discountPrice !== '' ? Number(discountPrice) : null,
@@ -244,13 +304,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Brand</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Brand <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
               <input
                 type="text"
-                required
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                placeholder="e.g. UrbanEdge"
+                placeholder="e.g. UrbanEdge (Optional)"
                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C63FF] focus:bg-white"
               />
             </div>
@@ -408,14 +469,81 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#6C63FF] flex items-center gap-1.5 m-0">
               <ImageIcon className="w-4 h-4" /> Product Images ({images.length})
             </h3>
-            <button
-              type="button"
-              onClick={addImageRow}
-              className="text-xs font-semibold text-[#6C63FF] hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" /> Add Image Slot
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => multiFileInputRef.current?.click()}
+                disabled={batchUploading}
+                className="text-xs font-semibold bg-[#6C63FF]/10 text-[#6C63FF] hover:bg-[#6C63FF]/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {batchUploading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" />
+                )}
+                <span>Upload Multiple</span>
+              </button>
+              <button
+                type="button"
+                onClick={addImageRow}
+                disabled={batchUploading}
+                className="text-xs font-semibold text-gray-600 hover:text-gray-900 px-2 py-1.5 rounded-lg hover:bg-gray-100 flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Slot
+              </button>
+            </div>
           </div>
+
+          {/* Batch Upload Progress Indicator */}
+          {batchUploading && (
+            <div className="bg-[#6C63FF]/10 border border-[#6C63FF]/20 text-[#6C63FF] px-3.5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-medium">
+              <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+              <span>{batchProgress || 'Uploading images to Cloudinary...'}</span>
+            </div>
+          )}
+
+          {/* Drag & Drop Multi-Image Dropzone */}
+          <div
+            onClick={() => !batchUploading && multiFileInputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (e.dataTransfer.files?.length) {
+                handleBatchFiles(Array.from(e.dataTransfer.files));
+              }
+            }}
+            className={`border-2 border-dashed rounded-xl p-3.5 text-center cursor-pointer transition-all ${
+              batchUploading
+                ? 'bg-gray-50 border-gray-200 pointer-events-none'
+                : 'border-[#6C63FF]/30 hover:border-[#6C63FF] bg-[#6C63FF]/5 hover:bg-[#6C63FF]/10'
+            }`}
+          >
+            <Upload className="w-5 h-5 mx-auto mb-1 text-[#6C63FF]" />
+            <p className="text-xs font-semibold text-gray-800 m-0">
+              Click or drop multiple images here to upload all at once
+            </p>
+            <p className="text-[11px] text-gray-500 m-0 mt-0.5">
+              Select 2 or more JPEG, PNG, or WebP files (up to 5MB each)
+            </p>
+          </div>
+
+          {/* Hidden Batch File Input */}
+          <input
+            type="file"
+            ref={multiFileInputRef}
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/jpg"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                handleBatchFiles(Array.from(e.target.files));
+              }
+            }}
+            className="hidden"
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {images.map((img, idx) => (
@@ -436,10 +564,20 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 <ImageUploadField
                   value={img.url}
                   folder="products"
+                  allowMultiple={true}
                   onChange={(newUrl) => {
                     const newImgs = [...images];
                     newImgs[idx].url = newUrl;
                     setImages(newImgs);
+                  }}
+                  onMultipleUpload={(additionalUrls) => {
+                    setImages((prev) => {
+                      const copy = [...prev];
+                      additionalUrls.forEach((url) => {
+                        copy.push({ url, sortOrder: copy.length });
+                      });
+                      return copy;
+                    });
                   }}
                   onRemove={() => removeImageRow(idx)}
                 />

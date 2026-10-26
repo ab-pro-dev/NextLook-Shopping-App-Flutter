@@ -6,6 +6,8 @@ interface ImageUploadFieldProps {
   value?: string;
   onChange: (url: string, publicId?: string) => void;
   onRemove?: () => void;
+  onMultipleUpload?: (urls: string[]) => void;
+  allowMultiple?: boolean;
   folder?: 'avatars' | 'products' | 'banners';
   label?: string;
   className?: string;
@@ -15,47 +17,65 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   value,
   onChange,
   onRemove,
+  onMultipleUpload,
+  allowMultiple = false,
   folder = 'products',
   label,
   className = '',
 }) => {
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('Uploading image to Cloudinary...');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
 
-    // Reset error & start upload
     setError(null);
+    const files = Array.from(fileList);
 
-    // Client-side file size validation check (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('File size exceeds 5MB limit. Please choose a smaller image.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
-
-    // Client-side file type validation check
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`File '${file.name}' exceeds 5MB limit. Please choose smaller images.`);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        setError(`File '${file.name}' has invalid type. Only JPEG, PNG, and WebP images are allowed.`);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
     }
 
     setLoading(true);
 
     try {
-      const res = await uploadAdminImage(file, folder);
-      onChange(res.url, res.publicId);
+      if (files.length === 1 || !onMultipleUpload) {
+        setLoadingText('Uploading image to Cloudinary...');
+        const res = await uploadAdminImage(files[0], folder);
+        onChange(res.url, res.publicId);
+      } else {
+        setLoadingText(`Uploading 1 of ${files.length} images...`);
+        const firstRes = await uploadAdminImage(files[0], folder);
+        onChange(firstRes.url, firstRes.publicId);
+
+        const remainingUrls: string[] = [];
+        for (let i = 1; i < files.length; i++) {
+          setLoadingText(`Uploading ${i + 1} of ${files.length} images...`);
+          const res = await uploadAdminImage(files[i], folder);
+          remainingUrls.push(res.url);
+        }
+        onMultipleUpload(remainingUrls);
+      }
     } catch (err: any) {
       console.error('Image upload error:', err);
       const serverMessage = err.response?.data?.message || err.message || 'Failed to upload image. Please try again.';
       setError(serverMessage);
     } finally {
       setLoading(false);
+      setLoadingText('Uploading image to Cloudinary...');
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -126,7 +146,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
           {loading ? (
             <div className="flex flex-col items-center gap-2 text-[#6C63FF]">
               <Loader2 className="w-6 h-6 animate-spin" />
-              <span className="text-xs font-semibold">Uploading image to Cloudinary...</span>
+              <span className="text-xs font-semibold">{loadingText}</span>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-1.5 text-gray-500">
@@ -136,7 +156,9 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
               <div className="text-xs font-medium text-gray-700">
                 <span className="text-[#6C63FF] font-semibold">Click to upload</span> or drag and drop
               </div>
-              <p className="text-[11px] text-gray-400">PNG, JPG, or WEBP (MAX. 5MB)</p>
+              <p className="text-[11px] text-gray-400">
+                {allowMultiple ? 'Select one or more PNG, JPG, or WEBP (MAX. 5MB)' : 'PNG, JPG, or WEBP (MAX. 5MB)'}
+              </p>
             </div>
           )}
         </div>
@@ -146,6 +168,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
       <input
         type="file"
         ref={fileInputRef}
+        multiple={allowMultiple}
         onChange={handleFileChange}
         accept="image/jpeg,image/png,image/webp,image/jpg"
         className="hidden"

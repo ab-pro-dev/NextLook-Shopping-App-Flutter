@@ -211,7 +211,7 @@ export const BannersPage: React.FC = () => {
   const filteredProducts = products.filter(
     (p) =>
       p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-      p.brand.toLowerCase().includes(productSearch.toLowerCase()) ||
+      (p.brand ? p.brand.toLowerCase().includes(productSearch.toLowerCase()) : false) ||
       p.id.toLowerCase().includes(productSearch.toLowerCase())
   );
 
@@ -600,7 +600,7 @@ export const BannersPage: React.FC = () => {
                   >
                     {filteredProducts.map((p) => (
                       <option key={p.id} value={p.id} className="py-1">
-                        {p.name} — ${p.price} ({p.brand})
+                        {p.name} — ${p.price} {p.brand ? `(${p.brand})` : ''}
                       </option>
                     ))}
                     {filteredProducts.length === 0 && (

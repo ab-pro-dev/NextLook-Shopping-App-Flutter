@@ -6,7 +6,7 @@ import { z } from 'zod';
 export const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
   description: z.string().min(1, 'Description is required'),
-  brand: z.string().min(1, 'Brand is required'),
+  brand: z.string().trim().nullable().optional(),
   categoryId: z.string().uuid('Valid Category ID is required'),
   price: z.number().positive('Price must be greater than 0'),
   discountPrice: z.number().positive('Discount price must be positive').nullable().optional(),
@@ -169,7 +169,7 @@ export async function createAdminProduct(req: Request, res: Response) {
         data: {
           name: data.name,
           description: data.description,
-          brand: data.brand,
+          brand: data.brand ? data.brand.trim() : null,
           categoryId: data.categoryId,
           price: data.price,
           discountPrice: data.discountPrice ?? null,
@@ -261,7 +261,7 @@ export async function updateAdminProduct(req: Request, res: Response) {
         data: {
           name: data.name,
           description: data.description,
-          brand: data.brand,
+          brand: data.brand ? data.brand.trim() : null,
           categoryId: data.categoryId,
           price: data.price,
           discountPrice: data.discountPrice ?? null,

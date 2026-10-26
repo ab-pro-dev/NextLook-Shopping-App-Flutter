@@ -98,7 +98,7 @@ export const ProductsPage: React.FC = () => {
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.brand ? p.brand.toLowerCase().includes(searchTerm.toLowerCase()) : false) ||
       p.sku.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesCategory =
@@ -274,7 +274,11 @@ export const ProductsPage: React.FC = () => {
                         />
                         <div>
                           <div className="font-bold text-gray-900 leading-tight">{product.name}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{product.brand}</div>
+                          {product.brand ? (
+                            <div className="text-xs text-gray-400 mt-0.5">{product.brand}</div>
+                          ) : (
+                            <div className="text-xs text-gray-400 italic mt-0.5">No brand</div>
+                          )}
                         </div>
                       </div>
                     </td>
