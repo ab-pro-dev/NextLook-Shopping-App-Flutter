@@ -40,7 +40,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 const CATEGORY_IMAGE_MAP: Record<string, string> = {
   men: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces&auto=format&q=80',
   women: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=faces&auto=format&q=80',
-  kids: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=120&h=120&fit=crop&crop=faces&auto=format&q=80',
+  kids: 'https://images.unsplash.com/photo-1636485426024-aa436369585d?w=120&h=120&fit=crop&crop=faces&auto=format&q=80',
   shoes: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop&crop=center&auto=format&q=80',
   accessories: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&h=120&fit=crop&crop=center&auto=format&q=80',
 };
