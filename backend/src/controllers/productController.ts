@@ -15,6 +15,10 @@ const productQuerySchema = z.object({
   sort: z.enum(['newest', 'price_asc', 'price_desc', 'rating', 'popularity']).optional().default('newest'),
   page: z.coerce.number().int().min(1, 'page must be a positive integer').optional().default(1),
   limit: z.coerce.number().int().min(1, 'limit must be a positive integer').max(100).optional().default(20),
+  isFlashSale: z.preprocess((val) => val === 'true' || val === true, z.boolean()).optional(),
+  isNewArrival: z.preprocess((val) => val === 'true' || val === true, z.boolean()).optional(),
+  isTrending: z.preprocess((val) => val === 'true' || val === true, z.boolean()).optional(),
+  isBestSeller: z.preprocess((val) => val === 'true' || val === true, z.boolean()).optional(),
 });
 
 export function resolveImageUrl(url: string | null | undefined, req?: Request): string | null {
@@ -54,7 +58,22 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    const { category, search, minPrice, maxPrice, color, size, minRating, sort, page, limit } = parseResult.data;
+    const {
+      category,
+      search,
+      minPrice,
+      maxPrice,
+      color,
+      size,
+      minRating,
+      sort,
+      page,
+      limit,
+      isFlashSale,
+      isNewArrival,
+      isTrending,
+      isBestSeller,
+    } = parseResult.data;
 
     const where: Prisma.ProductWhereInput = {};
 
@@ -64,11 +83,26 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       };
     }
 
-    if (search) {
-      where.name = {
-        contains: search,
-        mode: 'insensitive',
-      };
+    if (isFlashSale) {
+      where.isFlashSale = true;
+    }
+    if (isNewArrival) {
+      where.isNewArrival = true;
+    }
+    if (isTrending) {
+      where.isTrending = true;
+    }
+    if (isBestSeller) {
+      where.isBestSeller = true;
+    }
+
+    if (search && search.trim().length > 0) {
+      const q = search.trim();
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { brand: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
     }
 
     if (minPrice !== undefined || maxPrice !== undefined) {

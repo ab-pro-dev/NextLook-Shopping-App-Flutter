@@ -12,6 +12,7 @@ import 'features/home/home_screen.dart';
 import 'features/products/categories_screen.dart';
 import 'features/products/presentation/category_products_screen.dart';
 import 'features/products/presentation/product_detail_screen.dart';
+import 'features/products/presentation/search_screen.dart';
 import 'features/wishlist/wishlist_screen.dart';
 import 'features/cart/cart_screen.dart';
 import 'features/checkout/presentation/checkout_screen.dart';
@@ -71,25 +72,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/search',
         builder: (context, state) {
+          final query = state.uri.queryParameters['q'] ?? state.uri.queryParameters['search'];
           final isFlashSale = state.uri.queryParameters['isFlashSale'] == 'true';
           final isNewArrival = state.uri.queryParameters['isNewArrival'] == 'true';
           final isTrending = state.uri.queryParameters['isTrending'] == 'true';
           final isBestSeller = state.uri.queryParameters['isBestSeller'] == 'true';
-          String title = 'Search Products';
-          if (isFlashSale) title = 'Flash Sale Products';
-          if (isNewArrival) title = 'New Arrivals';
-          if (isTrending) title = 'Trending Products';
-          if (isBestSeller) title = 'Best Sellers';
 
-          return Scaffold(
-            appBar: AppBar(title: Text(title, style: GoogleFonts.poppins())),
-            body: Center(
-              child: Text(
-                'Search & Filter Screen Placeholder\nQuery: ${state.uri.queryParameters}',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 16),
-              ),
-            ),
+          return SearchScreen(
+            initialQuery: query,
+            isFlashSale: isFlashSale,
+            isNewArrival: isNewArrival,
+            isTrending: isTrending,
+            isBestSeller: isBestSeller,
           );
         },
       ),

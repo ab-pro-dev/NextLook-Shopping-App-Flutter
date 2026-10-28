@@ -8,10 +8,12 @@ import '../data/product_query_params.dart';
 
 class FiltersScreen extends ConsumerStatefulWidget {
   final ProductQueryParams currentParams;
+  final void Function(ProductQueryParams)? onApply;
 
   const FiltersScreen({
     super.key,
     required this.currentParams,
+    this.onApply,
   });
 
   @override
@@ -77,7 +79,11 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
       page: 1,
     );
 
-    ref.read(productListNotifierProvider.notifier).updateQueryParams(updated);
+    if (widget.onApply != null) {
+      widget.onApply!(updated);
+    } else {
+      ref.read(productListNotifierProvider.notifier).updateQueryParams(updated);
+    }
     context.pop();
   }
 

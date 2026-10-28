@@ -9,6 +9,10 @@ class ProductQueryParams {
   final String sort;
   final int page;
   final int limit;
+  final bool? isFlashSale;
+  final bool? isNewArrival;
+  final bool? isTrending;
+  final bool? isBestSeller;
 
   const ProductQueryParams({
     this.category,
@@ -21,6 +25,10 @@ class ProductQueryParams {
     this.sort = 'newest',
     this.page = 1,
     this.limit = 20,
+    this.isFlashSale,
+    this.isNewArrival,
+    this.isTrending,
+    this.isBestSeller,
   });
 
   ProductQueryParams copyWith({
@@ -34,6 +42,10 @@ class ProductQueryParams {
     String? sort,
     int? page,
     int? limit,
+    bool? isFlashSale,
+    bool? isNewArrival,
+    bool? isTrending,
+    bool? isBestSeller,
     bool clearCategory = false,
     bool clearSearch = false,
     bool clearMinPrice = false,
@@ -41,6 +53,10 @@ class ProductQueryParams {
     bool clearColor = false,
     bool clearSize = false,
     bool clearMinRating = false,
+    bool clearFlashSale = false,
+    bool clearNewArrival = false,
+    bool clearTrending = false,
+    bool clearBestSeller = false,
   }) {
     return ProductQueryParams(
       category: clearCategory ? null : (category ?? this.category),
@@ -53,6 +69,10 @@ class ProductQueryParams {
       sort: sort ?? this.sort,
       page: page ?? this.page,
       limit: limit ?? this.limit,
+      isFlashSale: clearFlashSale ? null : (isFlashSale ?? this.isFlashSale),
+      isNewArrival: clearNewArrival ? null : (isNewArrival ?? this.isNewArrival),
+      isTrending: clearTrending ? null : (isTrending ?? this.isTrending),
+      isBestSeller: clearBestSeller ? null : (isBestSeller ?? this.isBestSeller),
     );
   }
 
@@ -65,6 +85,10 @@ class ProductQueryParams {
     if (color != null && color!.isNotEmpty) params['color'] = color;
     if (size != null && size!.isNotEmpty) params['size'] = size;
     if (minRating != null) params['minRating'] = minRating;
+    if (isFlashSale == true) params['isFlashSale'] = 'true';
+    if (isNewArrival == true) params['isNewArrival'] = 'true';
+    if (isTrending == true) params['isTrending'] = 'true';
+    if (isBestSeller == true) params['isBestSeller'] = 'true';
     params['sort'] = sort;
     params['page'] = page;
     params['limit'] = limit;
@@ -85,7 +109,11 @@ class ProductQueryParams {
           minRating == other.minRating &&
           sort == other.sort &&
           page == other.page &&
-          limit == other.limit;
+          limit == other.limit &&
+          isFlashSale == other.isFlashSale &&
+          isNewArrival == other.isNewArrival &&
+          isTrending == other.isTrending &&
+          isBestSeller == other.isBestSeller;
 
   @override
   int get hashCode =>
@@ -98,5 +126,9 @@ class ProductQueryParams {
       minRating.hashCode ^
       sort.hashCode ^
       page.hashCode ^
-      limit.hashCode;
+      limit.hashCode ^
+      isFlashSale.hashCode ^
+      isNewArrival.hashCode ^
+      isTrending.hashCode ^
+      isBestSeller.hashCode;
 }

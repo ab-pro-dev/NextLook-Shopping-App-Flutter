@@ -161,3 +161,9 @@ final productListNotifierProvider = StateNotifierProvider<ProductListNotifier, A
   final repo = ref.watch(productRepositoryProvider);
   return ProductListNotifier(repo);
 });
+
+/// Dedicated provider for Search and View-All screens.
+final searchProductListNotifierProvider = StateNotifierProvider<ProductListNotifier, AsyncValue<ProductListState>>((ref) {
+  final repo = ref.watch(productRepositoryProvider);
+  return ProductListNotifier(repo);
+});

@@ -226,7 +226,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // 3. CATEGORIES ROW: Fixed order (Men, Women, Kids, Shoes, Accessories)
               _buildSectionHeader(
                 title: 'Categories',
-                onViewAll: null,
+                onViewAll: () => context.go('/categories'),
               ),
               const SizedBox(height: 14),
               categoriesAsync.when(
@@ -589,13 +589,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           if (onViewAll != null)
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: onViewAll,
-              child: Text(
-                'View all',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF6C63FF),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                child: Text(
+                  'View all',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6C63FF),
+                  ),
                 ),
               ),
             ),
