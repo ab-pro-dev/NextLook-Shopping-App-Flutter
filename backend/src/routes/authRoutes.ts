@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { googleAuth, refresh, me, updateProfile, changePassword, adminLogin } from '../controllers/authController';
+import { googleAuth, refresh, me, updateProfile, changePassword, adminLogin, uploadAvatar } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
+import { uploadMiddleware } from '../controllers/uploadController';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.post('/admin-login', adminLogin);
 router.post('/refresh', refresh);
 router.get('/me', authenticateToken, me);
 router.put('/me', authenticateToken, updateProfile);
+router.post('/avatar', authenticateToken, uploadMiddleware, uploadAvatar);
 router.put('/me/password', authenticateToken, changePassword);
 
 export default router;

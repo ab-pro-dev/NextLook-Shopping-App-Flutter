@@ -99,8 +99,16 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  Future<User> updateProfile({required String name}) async {
-    final updatedUser = await _authRepository.updateProfile(name: name);
+  Future<User> updateProfile({required String name, String? avatarUrl}) async {
+    final updatedUser = await _authRepository.updateProfile(name: name, avatarUrl: avatarUrl);
+    if (mounted) {
+      state = AuthAuthenticated(updatedUser);
+    }
+    return updatedUser;
+  }
+
+  Future<User> uploadAvatar({required List<int> imageBytes, required String fileName}) async {
+    final updatedUser = await _authRepository.uploadAvatar(imageBytes: imageBytes, fileName: fileName);
     if (mounted) {
       state = AuthAuthenticated(updatedUser);
     }

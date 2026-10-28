@@ -6,6 +6,7 @@ import { comparePassword, hashPassword } from '../utils/password';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { verifyGoogleToken } from '../services/googleAuthService';
 import { Role } from '@prisma/client';
+import cloudinary from '../config/cloudinary';
 
 /**
  * POST /api/auth/google
@@ -201,6 +202,58 @@ export async function updateProfile(req: AuthenticatedRequest, res: Response) {
   } catch (error: any) {
     console.error('Error in updateProfile:', error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/**
+ * POST /api/auth/avatar
+ * Uploads user profile photo to Cloudinary and updates user.avatarUrl
+ */
+export async function uploadAvatar(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const allowedMimetypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedMimetypes.includes(file.mimetype)) {
+      return res.status(400).json({
+        message: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.',
+      });
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({ message: 'File size exceeds 5MB limit.' });
+    }
+
+    const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+    const uploadResult = await cloudinary.uploader.upload(dataUri, {
+      folder: 'nextlook/avatars',
+      resource_type: 'image',
+    });
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl: uploadResult.secure_url },
+    });
+
+    const { passwordHash: _, ...userWithoutPassword } = updatedUser;
+
+    return res.status(200).json({
+      user: userWithoutPassword,
+      avatarUrl: uploadResult.secure_url,
+    });
+  } catch (error: any) {
+    console.error('Error in uploadAvatar:', error);
+    return res.status(500).json({
+      message: error.message || 'Failed to upload avatar image',
+    });
   }
 }
 

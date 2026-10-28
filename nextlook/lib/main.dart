@@ -23,6 +23,8 @@ import 'features/orders/presentation/order_tracking_screen.dart';
 import 'features/notifications/presentation/notifications_screen.dart';
 import 'features/address/presentation/addresses_screen.dart';
 import 'features/profile/presentation/edit_profile_screen.dart';
+import 'features/settings/presentation/settings_screen.dart';
+import 'features/settings/application/settings_providers.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -151,16 +153,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/settings-mobile',
-        builder: (context, state) => Scaffold(
-          appBar: AppBar(title: Text('Settings', style: GoogleFonts.poppins())),
-          body: Center(
-            child: Text(
-              'Settings Screen\n(Coming soon)',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
-            ),
-          ),
-        ),
+        builder: (context, state) => const SettingsScreen(),
       ),
 
       ShellRoute(
@@ -219,11 +212,14 @@ class NextLookApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'NextLook',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

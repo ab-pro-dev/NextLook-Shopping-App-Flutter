@@ -15,11 +15,11 @@ class FakeTestAuthController extends AuthController {
   }
 
   @override
-  Future<User> updateProfile({required String name}) async {
+  Future<User> updateProfile({required String name, String? avatarUrl}) async {
     updateProfileCalled = true;
     lastUpdatedName = name;
     final currentUser = (state as AuthAuthenticated).user;
-    final updated = currentUser.copyWith(name: name);
+    final updated = currentUser.copyWith(name: name, avatarUrl: avatarUrl ?? currentUser.avatarUrl);
     state = AuthAuthenticated(updated);
     return updated;
   }

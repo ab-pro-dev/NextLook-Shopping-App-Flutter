@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/token_storage.dart';
@@ -63,11 +64,33 @@ class AuthRepository {
     return User.fromJson(data['user'] as Map<String, dynamic>);
   }
 
-  /// Updates user profile (name) via PUT /api/auth/me
-  Future<User> updateProfile({required String name}) async {
+  /// Updates user profile (name, avatarUrl) via PUT /api/auth/me
+  Future<User> updateProfile({required String name, String? avatarUrl}) async {
     final response = await _dioClient.put(
       '/api/auth/me',
-      data: {'name': name},
+      data: {
+        'name': name,
+        if (avatarUrl != null) 'avatarUrl': avatarUrl,
+      },
+    );
+    final data = response.data as Map<String, dynamic>;
+    return User.fromJson(data['user'] as Map<String, dynamic>);
+  }
+
+  /// Uploads user avatar photo via POST /api/auth/avatar
+  Future<User> uploadAvatar({
+    required List<int> imageBytes,
+    required String fileName,
+  }) async {
+    final formData = FormData.fromMap({
+      'image': MultipartFile.fromBytes(
+        imageBytes,
+        filename: fileName,
+      ),
+    });
+    final response = await _dioClient.post(
+      '/api/auth/avatar',
+      data: formData,
     );
     final data = response.data as Map<String, dynamic>;
     return User.fromJson(data['user'] as Map<String, dynamic>);
