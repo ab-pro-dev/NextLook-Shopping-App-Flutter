@@ -12,6 +12,7 @@ import '../../notifications/application/notification_providers.dart';
 import '../application/banner_providers.dart';
 import '../data/models/banner_model.dart';
 import 'widgets/home_skeletons.dart';
+import '../../products/presentation/widgets/category_avatar_widget.dart';
 
 /// Real Home Screen for NextLook matching the exact UI spec from The_App_UI.png
 class HomeScreen extends ConsumerStatefulWidget {
@@ -506,7 +507,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final cat = categories[index];
-          // NOTE: Circular avatar category icon placeholders. Flagged for real photo assets.
           return GestureDetector(
             key: Key('category_item_${cat.slug}'),
             onTap: () => context.push('/categories/${cat.slug}/products'),
@@ -514,28 +514,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               margin: const EdgeInsets.only(right: 18),
               child: Column(
                 children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEF1F6), // Soft light-grey circular avatar background
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        _getCategoryIcon(cat.iconName),
-                        color: const Color(0xFF1E1E2D),
-                        size: 24,
-                      ),
-                    ),
+                  CategoryAvatarWidget(
+                    category: cat,
+                    size: 58,
                   ),
                   const SizedBox(height: 6),
                   Text(

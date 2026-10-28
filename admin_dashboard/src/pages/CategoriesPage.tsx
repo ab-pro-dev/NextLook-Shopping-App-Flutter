@@ -37,6 +37,14 @@ const ICON_MAP: Record<string, React.ElementType> = {
   zap: Zap,
 };
 
+const CATEGORY_IMAGE_MAP: Record<string, string> = {
+  men: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces&auto=format&q=80',
+  women: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=faces&auto=format&q=80',
+  kids: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=120&h=120&fit=crop&crop=faces&auto=format&q=80',
+  shoes: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop&crop=center&auto=format&q=80',
+  accessories: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&h=120&fit=crop&crop=center&auto=format&q=80',
+};
+
 export const CategoriesPage: React.FC = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -201,8 +209,19 @@ export const CategoriesPage: React.FC = () => {
                     {/* Name Cell */}
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-purple-50 text-[#6C63FF] border border-purple-200 rounded-xl flex items-center justify-center shrink-0">
-                          <IconComp className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-purple-50 text-[#6C63FF] border border-purple-200 flex items-center justify-center shrink-0 shadow-xs">
+                          {CATEGORY_IMAGE_MAP[category.slug?.toLowerCase()] ? (
+                            <img
+                              src={CATEGORY_IMAGE_MAP[category.slug?.toLowerCase()]}
+                              alt={category.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <IconComp className="w-5 h-5" />
+                          )}
                         </div>
                         <div className="font-bold text-gray-900">{category.name}</div>
                       </div>

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../application/product_providers.dart';
 import '../data/category_model.dart';
 import 'widgets/category_skeletons.dart';
+import 'widgets/category_avatar_widget.dart';
 
 /// Categories List Screen matching The_App_UI.png reference spec
 class CategoriesListScreen extends ConsumerWidget {
@@ -119,29 +120,10 @@ class CategoriesListScreen extends ConsumerWidget {
                               padding: const EdgeInsets.all(14.0),
                               child: Row(
                                 children: [
-                                  // Circular avatar icon
-                                  Container(
-                                    width: 54,
-                                    height: 54,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEEF1F6),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 2),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.04),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Icon(
-                                        _getCategoryIcon(cat.iconName),
-                                        color: darkNavy,
-                                        size: 24,
-                                      ),
-                                    ),
+                                  // Circular avatar category image/icon
+                                  CategoryAvatarWidget(
+                                    category: cat,
+                                    size: 54,
                                   ),
                                   const SizedBox(width: 16),
 
